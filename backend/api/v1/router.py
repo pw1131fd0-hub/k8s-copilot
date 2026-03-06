@@ -1,3 +1,4 @@
+"""API v1 router aggregating all backend controllers."""
 from fastapi import APIRouter
 from backend.controllers import pod_controller, diagnose_controller, yaml_controller
 

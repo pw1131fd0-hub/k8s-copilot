@@ -1,3 +1,4 @@
+"""Pydantic request/response schemas for the Lobster K8s Copilot API."""
 from pydantic import BaseModel, field_validator
 from typing import Optional, List
 from datetime import datetime

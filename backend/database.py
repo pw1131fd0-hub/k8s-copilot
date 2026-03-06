@@ -1,3 +1,4 @@
+"""Database engine and session management for Lobster K8s Copilot."""
 import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
@@ -16,6 +17,7 @@ class Base(DeclarativeBase):
 
 
 def get_db():
+    """Yield a database session, closing it when the request completes."""
     db = SessionLocal()
     try:
         yield db
@@ -24,5 +26,6 @@ def get_db():
 
 
 def init_db():
+    """Create all database tables from SQLAlchemy ORM models."""
     from backend.models.orm_models import Project, DiagnoseHistory  # noqa: F401
     Base.metadata.create_all(bind=engine)

@@ -1,3 +1,4 @@
+"""API controller for AI-powered pod diagnosis and history retrieval."""
 import logging
 import re
 from fastapi import APIRouter, Depends, HTTPException, Path
@@ -24,6 +25,7 @@ async def diagnose_pod(
     request: DiagnoseRequest = ...,
     db: Session = Depends(get_db),
 ):
+    """Trigger AI diagnosis for a pod and persist the result to history."""
     if not _POD_NAME_RE.match(pod_name):
         raise HTTPException(status_code=422, detail="Invalid pod name format")
     try:
@@ -35,6 +37,7 @@ async def diagnose_pod(
 
 @router.get("/history", response_model=List[DiagnoseHistoryRecord])
 async def get_diagnose_history(db: Session = Depends(get_db)):
+    """Return the 50 most recent diagnosis records across all pods."""
     return _repo.get_history(db)
 
 
@@ -43,6 +46,7 @@ async def get_pod_diagnose_history(
     pod_name: str = Path(..., description="Kubernetes pod name"),
     db: Session = Depends(get_db),
 ):
+    """Return diagnosis history for a specific pod, newest first."""
     if not _POD_NAME_RE.match(pod_name):
         raise HTTPException(status_code=422, detail="Invalid pod name format")
     return _repo.get_by_pod(db, pod_name)

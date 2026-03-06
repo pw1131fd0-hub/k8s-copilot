@@ -1,3 +1,4 @@
+"""AI analyzer backed by a locally running Ollama instance."""
 import os
 import httpx
 from ai_engine.analyzers.base_analyzer import BaseAnalyzer
@@ -12,9 +13,11 @@ class OllamaAnalyzer(BaseAnalyzer):
 
     @property
     def model_name(self) -> str:
+        """Return the fully-qualified Ollama model identifier."""
         return f"ollama/{self._model}"
 
     def is_available(self) -> bool:
+        """Return True if the Ollama service responds within 3 seconds."""
         try:
             resp = httpx.get(f"{self._base_url}/api/tags", timeout=3)
             return resp.status_code == 200
@@ -22,6 +25,7 @@ class OllamaAnalyzer(BaseAnalyzer):
             return False
 
     def analyze(self, prompt: str) -> str:
+        """Send prompt to the Ollama generate API and return the response text."""
         response = httpx.post(
             f"{self._base_url}/api/generate",
             json={"model": self._model, "prompt": prompt, "stream": False},

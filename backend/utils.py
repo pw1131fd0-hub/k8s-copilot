@@ -1,3 +1,4 @@
+"""Utility helpers for data masking and Kubernetes resource classification."""
 import re
 
 SENSITIVE_PATTERNS = [

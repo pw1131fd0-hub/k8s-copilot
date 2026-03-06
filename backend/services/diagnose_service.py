@@ -1,3 +1,4 @@
+"""Service layer orchestrating pod context collection and AI diagnosis."""
 import os
 import httpx
 from sqlalchemy.orm import Session
@@ -8,11 +9,14 @@ from backend.services.pod_service import PodService
 
 
 class DiagnoseService:
+    """Orchestrates AI-powered diagnosis by combining K8s context with LLM analysis."""
+
     def __init__(self):
         self._pod_service = PodService()
         self._ai_engine_url = os.getenv("AI_ENGINE_URL", "").rstrip("/")
 
     def diagnose(self, pod_name: str, namespace: str, db: Session) -> DiagnoseResponse:
+        """Collect pod context, run AI analysis, persist result, and return structured response."""
         context = self._pod_service.get_pod_context(pod_name, namespace)
 
         masked_describe = mask_sensitive_data(context["describe"])

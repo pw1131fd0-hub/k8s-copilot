@@ -1,3 +1,4 @@
+"""SQLAlchemy ORM models for Lobster K8s Copilot persistent storage."""
 import uuid
 from datetime import datetime
 from sqlalchemy import String, Text, DateTime
@@ -6,6 +7,8 @@ from backend.database import Base
 
 
 class Project(Base):
+    """ORM model representing a monitored Kubernetes project/cluster context."""
+
     __tablename__ = "projects"
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
@@ -14,6 +17,8 @@ class Project(Base):
 
 
 class DiagnoseHistory(Base):
+    """ORM model storing AI diagnosis results for auditing and history lookup."""
+
     __tablename__ = "diagnose_history"
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))

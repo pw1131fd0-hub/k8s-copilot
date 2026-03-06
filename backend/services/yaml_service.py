@@ -1,3 +1,4 @@
+"""Service layer for Kubernetes YAML manifest scanning and diff operations."""
 from typing import Any, Dict, List
 import yaml
 from backend.models.schemas import YamlIssue, YamlScanResponse
@@ -51,7 +52,10 @@ ANTI_PATTERN_RULES: List[Dict[str, Any]] = [
 
 
 class YamlService:
+    """Scans Kubernetes YAML manifests for security and reliability anti-patterns."""
+
     def scan(self, yaml_content: str, filename: str = "manifest.yaml") -> YamlScanResponse:
+        """Parse and analyse a multi-document YAML manifest, returning all detected issues."""
         issues: List[YamlIssue] = []
 
         try:

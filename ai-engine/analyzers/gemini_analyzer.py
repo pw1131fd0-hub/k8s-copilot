@@ -1,3 +1,4 @@
+"""AI analyzer backed by Google's Gemini generative models."""
 import os
 import google.generativeai as genai
 from ai_engine.analyzers.base_analyzer import BaseAnalyzer
@@ -16,8 +17,10 @@ class GeminiAnalyzer(BaseAnalyzer):
 
     @property
     def model_name(self) -> str:
+        """Return the fully-qualified Gemini model identifier."""
         return f"gemini/{self._model_id}"
 
     def analyze(self, prompt: str) -> str:
+        """Send prompt to the Gemini generative model and return the response text."""
         response = self._model.generate_content(prompt)
         return response.text or ""
