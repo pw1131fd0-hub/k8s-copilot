@@ -30,6 +30,7 @@ def run_migrations_offline() -> None:
 
 def run_migrations_online() -> None:
     url = config.get_main_option("sqlalchemy.url")
+    assert url is not None, "sqlalchemy.url must be configured in Alembic config"
     connect_args = {"check_same_thread": False} if url.startswith("sqlite") else {}
     connectable = create_engine(url, connect_args=connect_args, poolclass=pool.NullPool)
 

@@ -1,7 +1,7 @@
 """API controller for AI-powered pod diagnosis and history retrieval."""
 import logging
 import re
-from fastapi import APIRouter, Depends, HTTPException, Path
+from fastapi import APIRouter, Body, Depends, HTTPException, Path
 from sqlalchemy.orm import Session
 from backend.database import get_db
 from backend.models.schemas import DiagnoseRequest, DiagnoseResponse, DiagnoseHistoryRecord
@@ -22,7 +22,7 @@ _POD_NAME_RE = re.compile(r'^[a-z0-9]([a-z0-9\-]{0,251}[a-z0-9])?$')
 @router.post("/{pod_name}", response_model=DiagnoseResponse)
 async def diagnose_pod(
     pod_name: str = Path(..., description="Kubernetes pod name"),
-    request: DiagnoseRequest = ...,
+    request: DiagnoseRequest = Body(...),
     db: Session = Depends(get_db),
 ):
     """Trigger AI diagnosis for a pod and persist the result to history."""
