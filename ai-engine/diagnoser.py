@@ -1,9 +1,12 @@
 import os
 import json
+import logging
 import re
 from typing import Optional
 from ai_engine.prompts.k8s_prompts import DIAGNOSE_PROMPT_TEMPLATE
 from ai_engine.analyzers.base_analyzer import BaseAnalyzer
+
+logger = logging.getLogger(__name__)
 
 
 class AIDiagnoser:
@@ -78,6 +81,7 @@ class AIDiagnoser:
                 "model_used": "none",
             }
         except Exception as e:
+            logger.exception("Unexpected error during AI diagnosis for pod '%s'", context.get("pod_name"))
             return {
                 "root_cause": f"Diagnosis failed: {e}",
                 "remediation": "Check AI provider connectivity and retry.",

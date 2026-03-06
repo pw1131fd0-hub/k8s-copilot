@@ -1,4 +1,5 @@
 """FastAPI application entry point for Lobster K8s Copilot backend."""
+import logging
 import os
 import pathlib
 from contextlib import asynccontextmanager
@@ -14,6 +15,8 @@ from kubernetes import client, config
 from backend.database import init_db
 from backend.api.v1.router import router as v1_router
 
+logger = logging.getLogger(__name__)
+
 limiter = Limiter(key_func=get_remote_address)
 
 
@@ -26,7 +29,7 @@ async def lifespan(app: FastAPI):
         else:
             config.load_kube_config()
     except Exception as e:
-        print(f'Warning: Could not load K8s config: {e}')
+        logger.warning('Could not load K8s config: %s', e)
     yield
 
 
@@ -40,8 +43,7 @@ _allow_origins = [o.strip() for o in _raw_origins.split(",") if o.strip()] if _r
 _is_wildcard = not _allow_origins
 
 if _is_wildcard:
-    import logging
-    logging.getLogger(__name__).warning(
+    logger.warning(
         "ALLOWED_ORIGINS is not set — CORS is restricted to same-origin only. "
         "Set ALLOWED_ORIGINS to a comma-separated list of trusted origins for cross-origin access."
     )
@@ -82,7 +84,8 @@ async def get_cluster_status(request: Request):
         v1 = client.CoreV1Api()
         v1.list_namespace(limit=1, _request_timeout=10)
         return {"status": "connected"}
-    except Exception:
+    except Exception as e:
+        logger.debug("K8s cluster unreachable: %s", e)
         return {"status": "disconnected"}
 
 
