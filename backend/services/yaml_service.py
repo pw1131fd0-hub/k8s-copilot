@@ -1,14 +1,10 @@
-import sys
-import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
-
-from typing import List
+from typing import Any, Dict, List
 import yaml
 from backend.models.schemas import YamlIssue, YamlScanResponse
 from deepdiff import DeepDiff
 
 
-ANTI_PATTERN_RULES = [
+ANTI_PATTERN_RULES: List[Dict[str, Any]] = [
     {
         "id": "no-resource-limits",
         "severity": "ERROR",
