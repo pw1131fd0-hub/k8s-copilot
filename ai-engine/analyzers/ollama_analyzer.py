@@ -1,0 +1,31 @@
+import os
+import httpx
+from ai_engine.analyzers.base_analyzer import BaseAnalyzer
+
+
+class OllamaAnalyzer(BaseAnalyzer):
+    """Analyzer using a locally running Ollama instance (local-first, privacy-safe)."""
+
+    def __init__(self):
+        self._base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+        self._model = os.getenv("OLLAMA_MODEL", "llama3")
+
+    @property
+    def model_name(self) -> str:
+        return f"ollama/{self._model}"
+
+    def is_available(self) -> bool:
+        try:
+            resp = httpx.get(f"{self._base_url}/api/tags", timeout=3)
+            return resp.status_code == 200
+        except Exception:
+            return False
+
+    def analyze(self, prompt: str) -> str:
+        response = httpx.post(
+            f"{self._base_url}/api/generate",
+            json={"model": self._model, "prompt": prompt, "stream": False},
+            timeout=60,
+        )
+        response.raise_for_status()
+        return response.json().get("response", "")
