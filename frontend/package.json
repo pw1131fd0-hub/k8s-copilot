@@ -17,8 +17,16 @@
     "@testing-library/user-event": "^14.6.1",
     "autoprefixer": "^10.4.17",
     "jest-environment-jsdom": "^30.2.0",
-    "postcss": "^8.4.35",
+    "postcss": "^8.4.49",
     "tailwindcss": "^3.4.0"
+  },
+  "overrides": {
+    "dompurify": "^3.3.2",
+    "nth-check": "^2.1.1",
+    "postcss": "^8.4.49",
+    "underscore": "^1.13.8",
+    "@tootallnate/once": "^3.0.1",
+    "serialize-javascript": "^7.0.3"
   },
   "scripts": {
     "start": "react-scripts start",
