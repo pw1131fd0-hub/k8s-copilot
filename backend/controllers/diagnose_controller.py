@@ -38,10 +38,15 @@ async def diagnose_pod(
 @router.get("/history", response_model=list[DiagnoseHistoryRecord])
 async def get_diagnose_history(
     limit: int = Query(50, ge=1, le=200, description="Maximum number of records to return"),
+    search: str | None = Query(None, description="Full-text search keyword"),
+    namespace: str | None = Query(None, description="Filter by namespace"),
+    error_type: str | None = Query(None, description="Filter by error type"),
     db: Session = Depends(get_db),
 ) -> list[DiagnoseHistoryRecord]:
     """Return recent diagnosis records across all pods, ordered by creation time descending."""
-    return _repo.get_history(db, limit=limit)
+    return _repo.get_history(
+        db, limit=limit, search=search, namespace=namespace, error_type=error_type
+    )
 
 
 @router.get("/history/{pod_name}", response_model=list[DiagnoseHistoryRecord])

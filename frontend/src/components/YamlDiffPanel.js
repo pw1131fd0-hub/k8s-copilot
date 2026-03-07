@@ -11,12 +11,35 @@ const CHANGE_TYPE_CONFIG = {
   type_changes: { icon: '🔄', label: 'Type Changed', bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-700' },
 };
 
+const RISK_CONFIG = {
+  HIGH: { bg: 'bg-red-50', border: 'border-red-300', text: 'text-red-700', badge: 'bg-red-100 text-red-700' },
+  MEDIUM: { bg: 'bg-amber-50', border: 'border-amber-300', text: 'text-amber-700', badge: 'bg-amber-100 text-amber-700' },
+  LOW: { bg: 'bg-blue-50', border: 'border-blue-300', text: 'text-blue-700', badge: 'bg-blue-100 text-blue-700' },
+};
+
 function formatPath(path) {
   return path
     .replace(/^root\['?/, '')
     .replace(/'\]$/g, '')
     .replace(/'\]\['?/g, '.')
     .replace(/\[(\d+)\]/g, '[$1]');
+}
+
+function RiskCard({ risk }) {
+  const cfg = RISK_CONFIG[risk.risk] || RISK_CONFIG.LOW;
+  return (
+    <div className={`rounded-xl border p-3 ${cfg.bg} ${cfg.border}`}>
+      <div className="flex items-start gap-2">
+        <span className={`text-xs font-bold uppercase tracking-wide px-2 py-0.5 rounded ${cfg.badge}`}>
+          {risk.risk}
+        </span>
+        <div className="flex-1">
+          <code className="text-xs font-mono text-gray-700">{risk.path}</code>
+          <p className={`text-sm mt-1 ${cfg.text}`}>{risk.message}</p>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function DiffChangeCard({ changeType, path, value }) {
@@ -139,19 +162,14 @@ export default function YamlDiffPanel() {
     }
   };
 
-  const totalChanges = result
-    ? Object.entries(result).reduce((sum, [key, val]) => {
-        if (key === 'error') return sum;
-        if (Array.isArray(val)) return sum + val.length;
-        if (typeof val === 'object') return sum + Object.keys(val).length;
-        return sum;
-      }, 0)
-    : 0;
+  const totalChanges = result?.summary?.total_changes ?? 0;
+  const differences = result?.differences ?? {};
+  const riskAssessment = result?.risk_assessment ?? [];
 
   const renderChanges = () => {
-    if (!result || result.error) return null;
+    if (!result || result.error || !differences) return null;
     const changes = [];
-    Object.entries(result).forEach(([changeType, data]) => {
+    Object.entries(differences).forEach(([changeType, data]) => {
       if (!CHANGE_TYPE_CONFIG[changeType]) return;
       if (Array.isArray(data)) {
         data.forEach((path, idx) => {
@@ -168,6 +186,29 @@ export default function YamlDiffPanel() {
       }
     });
     return changes;
+  };
+
+  const renderRiskAssessment = () => {
+    if (!riskAssessment || riskAssessment.length === 0) return null;
+    const highRisks = riskAssessment.filter(r => r.risk === 'HIGH');
+    const otherRisks = riskAssessment.filter(r => r.risk !== 'HIGH');
+    return (
+      <div className="space-y-3">
+        <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+          ⚠️ Risk Assessment
+          {highRisks.length > 0 && (
+            <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700">
+              {highRisks.length} high risk
+            </span>
+          )}
+        </h3>
+        <div className="space-y-2">
+          {riskAssessment.map((risk, idx) => (
+            <RiskCard key={idx} risk={risk} />
+          ))}
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -275,6 +316,8 @@ export default function YamlDiffPanel() {
           </div>
         </div>
       )}
+
+      {result && !result.error && totalChanges > 0 && renderRiskAssessment()}
     </div>
   );
 }

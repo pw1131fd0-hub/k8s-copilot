@@ -35,10 +35,13 @@ class TestAIEngineHealthEndpoint:
     """Tests for the /health endpoint."""
 
     def test_health_returns_ok(self, ai_client):
-        """GET /health should return status ok."""
+        """GET /health should return status healthy with providers dict."""
         response = ai_client.get("/health")
         assert response.status_code == 200
-        assert response.json() == {"status": "ok"}
+        data = response.json()
+        assert data["status"] == "healthy"
+        assert "providers" in data
+        assert set(data["providers"].keys()) == {"ollama", "openai", "gemini"}
 
 
 class TestAIEngineDiagnoseEndpoint:

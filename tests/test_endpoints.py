@@ -153,21 +153,43 @@ def test_yaml_scan_payload_too_large_returns_422(client):
 
 
 def test_yaml_diff_endpoint_detects_changes(client):
-    """POST /api/v1/yaml/diff should return a non-empty diff when manifests differ."""
+    """POST /api/v1/yaml/diff should return structured diff with summary and risk assessment."""
     response = client.post(
         '/api/v1/yaml/diff',
         json={'yaml_a': 'replicas: 1', 'yaml_b': 'replicas: 3'},
     )
     assert response.status_code == 200
-    assert response.json() != {}
+    data = response.json()
+    assert data["differences"] != {}
+    assert data["summary"]["total_changes"] > 0
+    assert "risk_assessment" in data
+
+
+def test_yaml_diff_risk_assessment_detects_high_risk(client):
+    """POST /api/v1/yaml/diff should flag high-risk changes like replicas."""
+    response = client.post(
+        '/api/v1/yaml/diff',
+        json={
+            'yaml_a': 'spec:\n  replicas: 1',
+            'yaml_b': 'spec:\n  replicas: 5',
+        },
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data["risk_assessment"]) > 0
+    risks = [r["risk"] for r in data["risk_assessment"]]
+    assert "HIGH" in risks
 
 
 def test_yaml_diff_identical_yamls_returns_empty(client):
-    """POST /api/v1/yaml/diff should return an empty dict when manifests are identical."""
+    """POST /api/v1/yaml/diff should return empty differences when manifests are identical."""
     yaml = 'foo: bar\nbaz: 1'
     response = client.post('/api/v1/yaml/diff', json={'yaml_a': yaml, 'yaml_b': yaml})
     assert response.status_code == 200
-    assert response.json() == {}
+    data = response.json()
+    assert data["differences"] == {}
+    assert data["summary"]["total_changes"] == 0
+    assert data["risk_assessment"] == []
 
 
 def test_yaml_diff_invalid_yaml_returns_error_key(client):
@@ -221,3 +243,13 @@ def test_diagnose_pod_not_found_returns_404(client):
 
     assert response.status_code == 404
     assert 'not found' in response.json()['detail'].lower()
+
+
+def test_diagnose_history_endpoint_accepts_filters(client):
+    """GET /api/v1/diagnose/history should accept search, namespace, and error_type params."""
+    response = client.get(
+        '/api/v1/diagnose/history',
+        params={'search': 'crash', 'namespace': 'default', 'error_type': 'OOM'}
+    )
+    assert response.status_code == 200
+    assert isinstance(response.json(), list)

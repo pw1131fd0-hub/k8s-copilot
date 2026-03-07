@@ -48,9 +48,22 @@ class DiagnoseResponse(BaseModel):
 
 
 @app.get("/health")
-async def health() -> dict[str, str]:
-    """Return a simple health status for the AI Engine service."""
-    return {"status": "ok"}
+async def health() -> dict:
+    """Return health status for the AI Engine service, including provider availability."""
+    import os
+    providers = {
+        "ollama": False,
+        "openai": bool(os.getenv("OPENAI_API_KEY")),
+        "gemini": bool(os.getenv("GEMINI_API_KEY")),
+    }
+    # Check Ollama availability
+    if os.getenv("OLLAMA_BASE_URL"):
+        try:
+            from ai_engine.analyzers.ollama_analyzer import OllamaAnalyzer
+            providers["ollama"] = OllamaAnalyzer().is_available()
+        except Exception:  # pylint: disable=broad-exception-caught
+            pass
+    return {"status": "healthy", "providers": providers}
 
 
 @app.post("/diagnose", response_model=DiagnoseResponse)

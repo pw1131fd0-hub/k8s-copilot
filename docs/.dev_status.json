@@ -1,7 +1,7 @@
 {
-  "stage": "sa_sd",
+  "stage": "dev",
   "completeness": 100,
-  "summary": "完成 SA.md 與 SD.md：系統架構圖(Mermaid)、元件職責、資料流、部署架構、第三方依賴、完整 API 定義(RESTful)、DB Schema、錯誤處理策略、序列圖、模組介面定義",
-  "next_action": "進入 dev 階段，對照 SD.md 檢視程式碼實作完整性，確保所有 API 與模組皆已實作",
-  "updated_at": "2026-03-07T11:11:30.000Z"
+  "summary": "完成 dev 階段：根據 SD.md 補齊所有缺失功能。AI Engine /health 回傳 providers 狀態、YAML Diff 回傳結構化 differences/summary/risk_assessment、診斷歷史支援 search/namespace/error_type 過濾參數。更新前端 YamlDiffPanel 支援新 API 格式。所有 149 + 29 測試通過。",
+  "next_action": "進入 test 階段，確認測試覆蓋率達 80%+，撰寫缺失的單元測試與整合測試",
+  "updated_at": "2026-03-07T11:20:14.000Z"
 }

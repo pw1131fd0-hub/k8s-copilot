@@ -238,11 +238,100 @@ class YamlService:
             return None
 
     def diff(self, yaml_a: str, yaml_b: str) -> dict[str, Any]:
-        """Compare two YAML strings and return their differences."""
+        """Compare two YAML strings and return their differences with summary and risk assessment."""
         try:
             doc_a = yaml.safe_load(yaml_a)
             doc_b = yaml.safe_load(yaml_b)
             diff = DeepDiff(doc_a, doc_b, ignore_order=True)
-            return diff.to_dict() if diff else {}
+            diff_dict = diff.to_dict() if diff else {}
+
+            # Build summary
+            values_changed = len(diff_dict.get("values_changed", {}))
+            items_added = (
+                len(diff_dict.get("dictionary_item_added", {})) +
+                len(diff_dict.get("iterable_item_added", {}))
+            )
+            items_removed = (
+                len(diff_dict.get("dictionary_item_removed", {})) +
+                len(diff_dict.get("iterable_item_removed", {}))
+            )
+            summary = {
+                "total_changes": values_changed + items_added + items_removed,
+                "values_changed": values_changed,
+                "items_added": items_added,
+                "items_removed": items_removed,
+            }
+
+            # Generate risk assessment for common K8s changes
+            risk_assessment = self._assess_risks(diff_dict)
+
+            return {
+                "differences": diff_dict,
+                "summary": summary,
+                "risk_assessment": risk_assessment,
+            }
         except Exception as e:  # pylint: disable=broad-exception-caught
             return {"error": str(e)}
+
+    def _assess_risks(self, diff_dict: dict[str, Any]) -> list[dict[str, str]]:
+        """Analyze diff changes and return risk assessments for K8s-relevant changes."""
+        risks = []
+        high_risk_paths = [
+            "replicas", "resources", "limits", "requests", "image",
+            "securityContext", "privileged", "runAsRoot", "hostNetwork",
+            "hostPID", "ports", "type", "serviceAccountName",
+        ]
+        medium_risk_paths = [
+            "env", "configMap", "secret", "volumeMounts", "volumes",
+            "livenessProbe", "readinessProbe", "annotations",
+        ]
+
+        for change_type, changes in diff_dict.items():
+            if not isinstance(changes, dict):
+                continue
+            for path, value in changes.items():
+                clean_path = (
+                    path.replace("root['", "")
+                    .replace("']['", ".")
+                    .replace("']", "")
+                    .replace("[", "[")
+                )
+                risk_level = "LOW"
+                message = f"Value changed at {clean_path}"
+
+                for hp in high_risk_paths:
+                    if hp.lower() in path.lower():
+                        risk_level = "HIGH"
+                        if "replicas" in path.lower():
+                            message = "Replica count change may affect availability and load handling"
+                        elif "image" in path.lower():
+                            message = "Image change may introduce breaking changes or vulnerabilities"
+                        elif "port" in path.lower():
+                            message = "Port change may break existing clients"
+                        elif "type" in path.lower() and "LoadBalancer" in str(value):
+                            message = "Adding LoadBalancer type will provision external IP (cost implications)"
+                        elif "privileged" in path.lower():
+                            message = "Security context change affects container privileges"
+                        elif "resources" in path.lower() or "limits" in path.lower():
+                            message = "Resource limit change may affect performance and scheduling"
+                        break
+
+                if risk_level == "LOW":
+                    for mp in medium_risk_paths:
+                        if mp.lower() in path.lower():
+                            risk_level = "MEDIUM"
+                            if "probe" in path.lower():
+                                message = "Health probe change may affect pod lifecycle management"
+                            elif "env" in path.lower():
+                                message = "Environment variable change may affect application behavior"
+                            elif "secret" in path.lower() or "configMap" in path.lower():
+                                message = "Configuration reference change may affect application settings"
+                            break
+
+                risks.append({
+                    "path": clean_path,
+                    "risk": risk_level,
+                    "message": message,
+                })
+
+        return risks

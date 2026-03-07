@@ -127,16 +127,20 @@ class TestYamlServiceDiff:
     """Tests for the YamlService.diff() method."""
 
     def test_diff_identical_yamls(self, svc):
-        """Diffing two identical YAML strings should return an empty dict."""
+        """Diffing two identical YAML strings should return empty differences."""
         y = "foo: bar\nbaz: 1"
-        assert svc.diff(y, y) == {}
+        result = svc.diff(y, y)
+        assert result["differences"] == {}
+        assert result["summary"]["total_changes"] == 0
+        assert result["risk_assessment"] == []
 
     def test_diff_detects_changes(self, svc):
-        """Diffing two different YAML strings should return a non-empty dict."""
+        """Diffing two different YAML strings should return non-empty differences."""
         a = "foo: bar"
         b = "foo: baz"
         result = svc.diff(a, b)
-        assert result != {}
+        assert result["differences"] != {}
+        assert result["summary"]["total_changes"] > 0
 
     def test_diff_handles_invalid_yaml(self, svc):
         """Diffing invalid YAML should return a dict containing an 'error' key."""
