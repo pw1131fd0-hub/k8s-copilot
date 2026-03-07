@@ -25,26 +25,32 @@ def test_root_endpoint(client):
 
 
 def test_cluster_status_endpoint(client):
-    """GET /api/v1/cluster/status should return HTTP 200 with status and error fields."""
-    with patch('kubernetes.client.CoreV1Api') as mock_v1:
+    """GET /api/v1/cluster/status should return HTTP 200 with status, version, and message fields."""
+    mock_version_info = MagicMock()
+    mock_version_info.git_version = 'v1.28.0'
+    with patch('kubernetes.client.CoreV1Api') as mock_v1, \
+         patch('kubernetes.client.VersionApi') as mock_version:
         mock_v1.return_value.list_namespace.return_value = MagicMock(items=[])
+        mock_version.return_value.get_code.return_value = mock_version_info
         response = client.get('/api/v1/cluster/status')
     assert response.status_code == 200
     data = response.json()
     assert data['status'] == 'connected'
-    assert data['error'] is None
+    assert data['version'] == 'v1.28.0'
+    assert data['message'] is None
 
 
 def test_cluster_status_disconnected(client):
-    """GET /api/v1/cluster/status should return disconnected with error when K8s unreachable."""
+    """GET /api/v1/cluster/status should return disconnected with message when K8s unreachable."""
     with patch('kubernetes.client.CoreV1Api') as mock_v1:
         mock_v1.return_value.list_namespace.side_effect = Exception("Connection refused")
         response = client.get('/api/v1/cluster/status')
     assert response.status_code == 200
     data = response.json()
     assert data['status'] == 'disconnected'
+    assert data['version'] is None
     # Security: Error message should be generic, not expose internal details
-    assert data['error'] == 'Unable to connect to Kubernetes cluster'
+    assert data['message'] == 'Unable to connect to Kubernetes cluster'
 
 
 def test_list_pods_endpoint(client):

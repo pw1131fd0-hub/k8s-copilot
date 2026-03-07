@@ -1,6 +1,6 @@
 """API controller for AI-powered pod diagnosis and history retrieval."""
 import logging
-from fastapi import APIRouter, Body, Depends, HTTPException, Path
+from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query
 from sqlalchemy.orm import Session
 from backend.database import get_db
 from backend.models.schemas import DiagnoseRequest, DiagnoseResponse, DiagnoseHistoryRecord
@@ -36,9 +36,12 @@ async def diagnose_pod(
 
 
 @router.get("/history", response_model=list[DiagnoseHistoryRecord])
-async def get_diagnose_history(db: Session = Depends(get_db)) -> list[DiagnoseHistoryRecord]:
-    """Return the 50 most recent diagnosis records across all pods."""
-    return _repo.get_history(db)
+async def get_diagnose_history(
+    limit: int = Query(50, ge=1, le=200, description="Maximum number of records to return"),
+    db: Session = Depends(get_db),
+) -> list[DiagnoseHistoryRecord]:
+    """Return recent diagnosis records across all pods, ordered by creation time descending."""
+    return _repo.get_history(db, limit=limit)
 
 
 @router.get("/history/{pod_name}", response_model=list[DiagnoseHistoryRecord])

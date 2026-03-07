@@ -2,11 +2,15 @@ import React, { useState } from 'react';
 import PodList from '../components/PodList';
 import DiagnosePanel from '../components/DiagnosePanel';
 import YAMLCodeEditor from '../components/YAMLCodeEditor';
+import YamlDiffPanel from '../components/YamlDiffPanel';
+import DiagnoseHistory from '../components/DiagnoseHistory';
 import { useK8sData } from '../hooks/useK8sData';
 
 const TABS = [
   { label: 'Cluster Overview', icon: '🖥️' },
   { label: 'YAML Editor', icon: '📝' },
+  { label: 'YAML Diff', icon: '📊' },
+  { label: 'Diagnose History', icon: '📜' },
 ];
 
 function StatCard({ label, value, colorClass, subtext }) {
@@ -127,6 +131,8 @@ export default function Dashboard() {
           />
         )}
         {activeTab === 1 && <YAMLCodeEditor />}
+        {activeTab === 2 && <YamlDiffPanel />}
+        {activeTab === 3 && <DiagnoseHistory />}
       </main>
 
       {/* Diagnose slide-in panel */}

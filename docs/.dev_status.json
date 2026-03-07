@@ -1,7 +1,7 @@
 {
-  "stage": "sa_sd",
+  "stage": "dev",
   "completeness": 100,
-  "summary": "完成 SA.md (系統架構) 和 SD.md (系統設計) 文件，包含系統架構圖、元件職責、資料流、部署架構、API 定義、DB Schema、序列圖、模組介面定義",
-  "next_action": "進入 dev 階段，檢查程式碼實作是否完整符合 SD.md 規格",
-  "updated_at": "2026-03-07T10:09:49.577Z"
+  "summary": "完成 dev 階段：新增 DiagnoseHistory 和 YamlDiff 前端元件，更新 API (limit param, version/message)，所有 80 個測試通過",
+  "next_action": "進入 test 階段，增加測試覆蓋率至 80%+，確保所有功能有單元/整合測試",
+  "updated_at": "2026-03-07T10:20:17.003Z"
 }

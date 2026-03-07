@@ -151,11 +151,15 @@ async def get_cluster_status() -> dict[str, str | None]:
     try:
         v1 = client.CoreV1Api()
         v1.list_namespace(limit=1, _request_timeout=10)
-        return {"status": "connected", "error": None}
+        # Get K8s server version
+        version_api = client.VersionApi()
+        version_info = version_api.get_code(_request_timeout=5)
+        version = version_info.git_version if version_info else None
+        return {"status": "connected", "version": version, "message": None}
     except Exception as e:  # pylint: disable=broad-exception-caught
         logger.debug("K8s cluster unreachable: %s", e)
         # Security: Don't expose detailed K8s error info to clients
-        return {"status": "disconnected", "error": "Unable to connect to Kubernetes cluster"}
+        return {"status": "disconnected", "version": None, "message": "Unable to connect to Kubernetes cluster"}
 
 
 @app.get("/{full_path:path}")
