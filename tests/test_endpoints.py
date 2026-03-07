@@ -43,8 +43,8 @@ def test_cluster_status_disconnected(client):
     assert response.status_code == 200
     data = response.json()
     assert data['status'] == 'disconnected'
-    assert data['error'] is not None
-    assert 'Connection refused' in data['error']
+    # Security: Error message should be generic, not expose internal details
+    assert data['error'] == 'Unable to connect to Kubernetes cluster'
 
 
 def test_list_pods_endpoint(client):

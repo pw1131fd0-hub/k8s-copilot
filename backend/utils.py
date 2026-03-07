@@ -23,6 +23,19 @@ SENSITIVE_PATTERNS = [
     # AWS access key IDs and secret access keys
     (r'(?i)(AKIA[A-Z0-9]{16})', r'[MASKED-AWS-KEY]'),
     (r'(?i)(aws[_-]?secret[_-]?access[_-]?key\s*[:=]\s*)([A-Za-z0-9\/\+\=]{20,})', r'\1[MASKED]'),
+    # Base64-encoded secrets (commonly seen in K8s Secrets)
+    (r'(?i)(data:\s*\n(?:\s+[\w\-]+:\s*))([A-Za-z0-9\+\/\=]{20,})', r'\1[MASKED-BASE64]'),
+    # Environment variable style secrets in YAML: - name: X value: Y
+    (
+        r'(?i)(name:\s*["\']?(?:password|token|secret|api[_-]?key|credential)["\']?\s+'
+        r'value:\s*["\']?)([^\s"\'\n]+)',
+        r'\1[MASKED]',
+    ),
+    # SSH private keys
+    (r'(?i)(-----BEGIN\s+(?:RSA\s+)?PRIVATE\s+KEY-----)', r'[MASKED-PRIVATE-KEY]'),
+    # GitHub/GitLab tokens
+    (r'(gh[pousr]_[A-Za-z0-9]{36,})', r'[MASKED-GH-TOKEN]'),
+    (r'(glpat-[A-Za-z0-9\-]{20,})', r'[MASKED-GL-TOKEN]'),
 ]
 
 

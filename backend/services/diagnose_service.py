@@ -2,6 +2,7 @@
 import logging
 import os
 from typing import TypedDict
+from urllib.parse import urlparse
 import httpx
 from sqlalchemy.orm import Session
 from backend.models.schemas import DiagnoseResponse
@@ -10,6 +11,26 @@ from backend.utils import mask_sensitive_data
 from backend.services.pod_service import PodService
 
 logger = logging.getLogger(__name__)
+
+
+def _validate_ai_engine_url(url: str) -> str | None:
+    """Validate and sanitize AI_ENGINE_URL. Returns None if invalid."""
+    if not url:
+        return None
+    try:
+        parsed = urlparse(url)
+        if parsed.scheme not in ("http", "https"):
+            logger.warning("AI_ENGINE_URL has invalid scheme: %s", parsed.scheme)
+            return None
+        if not parsed.netloc:
+            logger.warning("AI_ENGINE_URL has no host")
+            return None
+        # Block localhost/internal IPs in production if desired
+        # For now, we allow it for development flexibility
+        return f"{parsed.scheme}://{parsed.netloc}{parsed.path}".rstrip("/")
+    except Exception as e:
+        logger.warning("AI_ENGINE_URL validation failed: %s", e)
+        return None
 
 
 class AIResult(TypedDict):
@@ -27,7 +48,7 @@ class DiagnoseService:
 
     def __init__(self) -> None:
         self._pod_service = PodService()
-        self._ai_engine_url = os.getenv("AI_ENGINE_URL", "").rstrip("/")
+        self._ai_engine_url = _validate_ai_engine_url(os.getenv("AI_ENGINE_URL", ""))
 
     def diagnose(self, pod_name: str, namespace: str, db: Session) -> DiagnoseResponse:
         """Collect pod context, run AI analysis, persist result, and return structured response."""

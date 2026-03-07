@@ -2,12 +2,15 @@
 import logging
 import os
 import pathlib
+import secrets
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import Response
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
@@ -17,6 +20,52 @@ from backend.database import init_db
 from backend.api.v1.router import router as v1_router
 
 logger = logging.getLogger(__name__)
+
+
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    """Middleware to add security headers to all responses."""
+
+    async def dispatch(self, request: Request, call_next) -> Response:
+        response = await call_next(request)
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+        if request.url.scheme == "https":
+            response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        return response
+
+
+class APIKeyAuthMiddleware(BaseHTTPMiddleware):
+    """Optional API key authentication middleware (enabled via LOBSTER_API_KEY env var)."""
+
+    EXCLUDED_PATHS = {"/", "/docs", "/redoc", "/openapi.json"}
+
+    def __init__(self, app, api_key: str | None):
+        super().__init__(app)
+        self._api_key = api_key
+
+    async def dispatch(self, request: Request, call_next) -> Response:
+        if not self._api_key:
+            return await call_next(request)
+        if request.url.path in self.EXCLUDED_PATHS:
+            return await call_next(request)
+        if request.method == "OPTIONS":
+            return await call_next(request)
+        auth_header = request.headers.get("Authorization", "")
+        if auth_header.startswith("Bearer "):
+            token = auth_header[7:]
+            if secrets.compare_digest(token, self._api_key):
+                return await call_next(request)
+        api_key_header = request.headers.get("X-API-Key", "")
+        if api_key_header and secrets.compare_digest(api_key_header, self._api_key):
+            return await call_next(request)
+        return Response(
+            content='{"detail":"Invalid or missing API key"}',
+            status_code=401,
+            media_type="application/json",
+        )
 
 limiter = Limiter(key_func=get_remote_address)
 
@@ -55,8 +104,22 @@ app.add_middleware(
     allow_origins=_allow_origins if not _is_wildcard else [],
     allow_credentials=not _is_wildcard,
     allow_methods=["GET", "POST", "OPTIONS"],
-    allow_headers=["Content-Type", "Authorization"],
+    allow_headers=["Content-Type", "Authorization", "X-API-Key"],
 )
+
+# Add security headers middleware
+app.add_middleware(SecurityHeadersMiddleware)
+
+# Add optional API key authentication (enabled via LOBSTER_API_KEY env var)
+_api_key = os.getenv("LOBSTER_API_KEY")
+if _api_key:
+    logger.info("API key authentication is ENABLED")
+    app.add_middleware(APIKeyAuthMiddleware, api_key=_api_key)
+else:
+    logger.warning(
+        "LOBSTER_API_KEY is not set — API endpoints are publicly accessible. "
+        "Set LOBSTER_API_KEY to enable authentication."
+    )
 
 app.include_router(v1_router, prefix="/api/v1")
 
@@ -91,13 +154,19 @@ async def get_cluster_status() -> dict[str, str | None]:
         return {"status": "connected", "error": None}
     except Exception as e:  # pylint: disable=broad-exception-caught
         logger.debug("K8s cluster unreachable: %s", e)
-        return {"status": "disconnected", "error": str(e)}
+        # Security: Don't expose detailed K8s error info to clients
+        return {"status": "disconnected", "error": "Unable to connect to Kubernetes cluster"}
 
 
 @app.get("/{full_path:path}")
 async def spa_catch_all(full_path: str) -> FileResponse:
     """Forward all non-API, non-static routes to the React SPA index.html."""
-    if full_path.startswith("api/") or full_path.startswith("static/"):
+    # Security: Reject path traversal attempts
+    if ".." in full_path or full_path.startswith("/"):
+        raise HTTPException(status_code=400, detail="Invalid path")
+    # Security: Normalize and decode URL-encoded variants
+    normalized = pathlib.Path(full_path).as_posix()
+    if normalized.startswith("api/") or normalized.startswith("static/"):
         raise HTTPException(status_code=404)
     index_html = _FRONTEND_BUILD / "index.html"
     if index_html.is_file():
