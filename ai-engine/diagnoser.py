@@ -105,13 +105,17 @@ class AIDiagnoser:
             # No LLM provider configured - return structured stub
             return DiagnoseResult(
                 root_cause=f"AI provider not configured: {e}",
-                remediation="Please configure OPENAI_API_KEY, GEMINI_API_KEY, or start Ollama locally.",
+                remediation=(
+                    "Please configure OPENAI_API_KEY, GEMINI_API_KEY, or start Ollama locally."
+                ),
                 raw_analysis=str(e),
                 model_used="none",
                 detailed_analysis=None,
             )
         except Exception as e:
-            logger.exception("Unexpected error during AI diagnosis for pod '%s'", context.get("pod_name"))
+            logger.exception(
+                "Unexpected error during AI diagnosis for pod '%s'", context.get("pod_name")
+            )
             return DiagnoseResult(
                 root_cause=f"Diagnosis failed: {e}",
                 remediation="Check AI provider connectivity and retry.",

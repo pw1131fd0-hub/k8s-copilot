@@ -7,10 +7,8 @@ class BaseAnalyzer(ABC):
     @abstractmethod
     def analyze(self, prompt: str) -> str:
         """Send prompt to LLM and return raw text response."""
-        ...
 
     @property
     @abstractmethod
     def model_name(self) -> str:
         """Return the name/identifier of the underlying model."""
-        ...

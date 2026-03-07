@@ -30,7 +30,9 @@ async def diagnose_pod(
         raise HTTPException(status_code=404, detail=str(e)) from e
     except Exception as e:
         logger.error("Diagnosis failed for pod %s: %s", pod_name, e)
-        raise HTTPException(status_code=500, detail="Diagnosis failed. Check server logs for details.") from e
+        raise HTTPException(
+            status_code=500, detail="Diagnosis failed. Check server logs for details."
+        ) from e
 
 
 @router.get("/history", response_model=list[DiagnoseHistoryRecord])

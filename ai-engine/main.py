@@ -1,22 +1,28 @@
 """AI Engine microservice - exposes AIDiagnoser via HTTP API."""
-import os
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from fastapi import FastAPI
 from pydantic import BaseModel
 from dotenv import load_dotenv
+
+if TYPE_CHECKING:
+    from ai_engine.diagnoser import AIDiagnoser
 
 load_dotenv()
 
 app = FastAPI(title="Lobster AI Engine", version="1.0.0")
 
 # Module-level singleton – avoids repeated Ollama is_available() probes per request.
-_diagnoser: "AIDiagnoser | None" = None
+_diagnoser: AIDiagnoser | None = None
 
 
-def _get_diagnoser() -> "AIDiagnoser":
+def _get_diagnoser() -> AIDiagnoser:
     """Return the shared AIDiagnoser singleton, creating it on first use."""
-    global _diagnoser
+    global _diagnoser  # noqa: PLW0603 – intentional module-level singleton
     if _diagnoser is None:
-        from ai_engine.diagnoser import AIDiagnoser
+        from ai_engine.diagnoser import AIDiagnoser  # noqa: PLC0415
         _diagnoser = AIDiagnoser()
     return _diagnoser
 

@@ -1,6 +1,7 @@
 """Pydantic request/response schemas for the Lobster K8s Copilot API."""
-from pydantic import BaseModel, field_validator
 from datetime import datetime
+
+from pydantic import BaseModel, field_validator
 
 from backend.utils import K8S_NAME_RE
 
@@ -34,7 +35,9 @@ class DiagnoseRequest(BaseModel):
     @classmethod
     def validate_namespace(cls, v: str) -> str:
         if not K8S_NAME_RE.match(v):
-            raise ValueError("namespace must be a valid Kubernetes name (lowercase alphanumeric and hyphens)")
+            raise ValueError(
+                "namespace must be a valid Kubernetes name (lowercase alphanumeric and hyphens)"
+            )
         return v
 
 
@@ -61,7 +64,9 @@ class YamlScanRequest(BaseModel):
     @classmethod
     def validate_yaml_size(cls, v: str) -> str:
         if len(v.encode("utf-8")) > _YAML_MAX_BYTES:
-            raise ValueError(f"yaml_content exceeds maximum allowed size of {_YAML_MAX_BYTES // 1024} KB")
+            raise ValueError(
+                f"yaml_content exceeds maximum allowed size of {_YAML_MAX_BYTES // 1024} KB"
+            )
         return v
 
 

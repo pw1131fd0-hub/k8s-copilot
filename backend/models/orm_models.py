@@ -26,7 +26,9 @@ class DiagnoseHistory(Base):
     namespace: Mapped[str] = mapped_column(String, nullable=False, default="default")
     error_type: Mapped[str] = mapped_column(String, nullable=True)
     ai_analysis: Mapped[str] = mapped_column(Text, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc), index=True
+    )
 
     __table_args__ = (
         Index("ix_diagnose_history_pod_namespace", "pod_name", "namespace"),
