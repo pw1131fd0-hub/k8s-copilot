@@ -228,3 +228,72 @@ class TestYamlServiceSecurityRules:
         result = svc.scan(yaml_ok)
         rules = [i.rule for i in result.issues]
         assert 'privileged-container' not in rules
+
+    def test_no_resource_requests_detected(self, svc):
+        """Containers without resources.requests should trigger the no-resource-requests rule."""
+        result = svc.scan(MISSING_LIMITS_YAML)
+        rules = [i.rule for i in result.issues]
+        assert 'no-resource-requests' in rules
+        warnings = [i for i in result.issues if i.rule == 'no-resource-requests']
+        assert warnings[0].severity == 'WARNING'
+
+    def test_image_without_tag_detected(self, svc):
+        """Containers using an image without any tag (e.g. 'nginx') should trigger latest-image-tag."""
+        yaml_no_tag = """
+apiVersion: v1
+kind: Pod
+metadata:
+  name: notag-pod
+spec:
+  containers:
+  - name: app
+    image: nginx
+"""
+        result = svc.scan(yaml_no_tag)
+        rules = [i.rule for i in result.issues]
+        assert 'latest-image-tag' in rules
+
+
+STATEFULSET_YAML = """
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: db
+spec:
+  template:
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:latest
+"""
+
+DAEMONSET_YAML = """
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: log-agent
+spec:
+  template:
+    spec:
+      containers:
+      - name: fluentd
+        image: fluentd:latest
+"""
+
+
+class TestYamlServiceOtherKinds:
+    def test_statefulset_containers_are_scanned(self, svc):
+        """StatefulSet containers should be extracted and scanned for anti-patterns."""
+        result = svc.scan(STATEFULSET_YAML)
+        rules = [i.rule for i in result.issues]
+        assert 'no-resource-limits' in rules
+        assert 'latest-image-tag' in rules
+        assert result.has_errors is True
+
+    def test_daemonset_containers_are_scanned(self, svc):
+        """DaemonSet containers should be extracted and scanned for anti-patterns."""
+        result = svc.scan(DAEMONSET_YAML)
+        rules = [i.rule for i in result.issues]
+        assert 'no-resource-limits' in rules
+        assert 'latest-image-tag' in rules
+        assert result.has_errors is True

@@ -1,5 +1,6 @@
 """Pydantic request/response schemas for the Lobster K8s Copilot API."""
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, field_validator
 
@@ -75,7 +76,7 @@ class YamlScanRequest(BaseModel):
 class YamlIssue(BaseModel):
     """A single issue detected during YAML manifest scanning."""
 
-    severity: str  # ERROR | WARNING | INFO
+    severity: Literal["ERROR", "WARNING", "INFO"]
     rule: str
     message: str
     line: int | None = None

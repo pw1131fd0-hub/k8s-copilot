@@ -121,6 +121,34 @@ def test_yaml_scan_payload_too_large_returns_422(client):
     assert response.status_code == 422
 
 
+def test_yaml_diff_endpoint_detects_changes(client):
+    """POST /api/v1/yaml/diff should return a non-empty diff when manifests differ."""
+    response = client.post(
+        '/api/v1/yaml/diff',
+        json={'yaml_a': 'replicas: 1', 'yaml_b': 'replicas: 3'},
+    )
+    assert response.status_code == 200
+    assert response.json() != {}
+
+
+def test_yaml_diff_identical_yamls_returns_empty(client):
+    """POST /api/v1/yaml/diff should return an empty dict when manifests are identical."""
+    yaml = 'foo: bar\nbaz: 1'
+    response = client.post('/api/v1/yaml/diff', json={'yaml_a': yaml, 'yaml_b': yaml})
+    assert response.status_code == 200
+    assert response.json() == {}
+
+
+def test_yaml_diff_invalid_yaml_returns_error_key(client):
+    """POST /api/v1/yaml/diff with invalid YAML should return a dict with an 'error' key."""
+    response = client.post(
+        '/api/v1/yaml/diff',
+        json={'yaml_a': 'not: valid: yaml: :::', 'yaml_b': 'foo: bar'},
+    )
+    assert response.status_code == 200
+    assert 'error' in response.json()
+
+
 def test_diagnose_history_endpoint_returns_list(client):
     """GET /api/v1/diagnose/history should return a list (empty is valid)."""
     response = client.get('/api/v1/diagnose/history')
