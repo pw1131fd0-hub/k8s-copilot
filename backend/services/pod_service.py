@@ -29,14 +29,24 @@ class PodService:
     def list_pods(self, namespace: Optional[str] = None) -> PodListResponse:
         """List all pods, optionally filtered by namespace."""
         v1 = self._get_v1()
-        if namespace:
-            pods = v1.list_namespaced_pod(
-                namespace=namespace, watch=False, _request_timeout=_K8S_LIST_TIMEOUT
-            )
-        else:
-            pods = v1.list_pod_for_all_namespaces(
-                watch=False, _request_timeout=_K8S_LIST_TIMEOUT
-            )
+        try:
+            if namespace:
+                pods = v1.list_namespaced_pod(
+                    namespace=namespace, watch=False, _request_timeout=_K8S_LIST_TIMEOUT
+                )
+            else:
+                pods = v1.list_pod_for_all_namespaces(
+                    watch=False, _request_timeout=_K8S_LIST_TIMEOUT
+                )
+        except (ReadTimeoutError, MaxRetryError) as e:
+            logger.warning("K8s API timed out listing pods: %s", e)
+            return PodListResponse(pods=[], total=0)
+        except ApiException as e:
+            logger.warning("K8s API error listing pods: HTTP %s – %s", e.status, e.reason)
+            return PodListResponse(pods=[], total=0)
+        except Exception as e:
+            logger.error("Unexpected error listing pods: %s", e)
+            return PodListResponse(pods=[], total=0)
 
         pod_list = []
         for item in pods.items:

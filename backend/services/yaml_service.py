@@ -84,6 +84,8 @@ class YamlService:
             elif kind == "CronJob":
                 containers = (spec.get("jobTemplate", {}).get("spec", {})
                               .get("template", {}).get("spec", {}).get("containers", []))
+            elif kind == "Job":
+                containers = spec.get("template", {}).get("spec", {}).get("containers", [])
 
             for container in containers:
                 name = container.get("name", "unknown")

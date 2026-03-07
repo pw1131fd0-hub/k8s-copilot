@@ -124,3 +124,34 @@ class TestYamlServiceDiff:
         b = "foo: baz"
         result = svc.diff(a, b)
         assert result != {}
+
+    def test_diff_handles_invalid_yaml(self, svc):
+        result = svc.diff("not: valid: yaml: :::", "foo: bar")
+        assert "error" in result
+
+
+JOB_YAML = """
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: batch-job
+spec:
+  template:
+    spec:
+      containers:
+      - name: worker
+        image: worker:latest
+      restartPolicy: Never
+"""
+
+
+class TestYamlServiceJobKind:
+    def test_job_containers_are_scanned(self, svc):
+        result = svc.scan(JOB_YAML)
+        rules = [i.rule for i in result.issues]
+        assert 'no-resource-limits' in rules
+        assert 'latest-image-tag' in rules
+
+    def test_job_issues_flagged_as_errors(self, svc):
+        result = svc.scan(JOB_YAML)
+        assert result.has_errors is True

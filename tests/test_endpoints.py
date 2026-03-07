@@ -5,6 +5,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 import pytest
 from fastapi.testclient import TestClient
 from unittest.mock import patch, MagicMock
+from kubernetes.client.exceptions import ApiException
 
 
 @pytest.fixture
@@ -48,6 +49,45 @@ def test_list_pods_endpoint(client):
     assert data['pods'][0]['name'] == 'test-pod'
 
 
+def test_list_pods_endpoint_k8s_api_error_returns_empty(client):
+    """list_pods should gracefully return an empty list on K8s API failures."""
+    from backend.controllers.pod_controller import _svc
+    mock_v1 = MagicMock()
+    mock_v1.list_pod_for_all_namespaces.side_effect = ApiException(status=403, reason="Forbidden")
+    _svc._v1 = mock_v1
+    try:
+        response = client.get('/api/v1/cluster/pods')
+    finally:
+        _svc._v1 = None  # reset cached client
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data['pods'] == []
+    assert data['total'] == 0
+
+
+def test_list_pods_endpoint_namespace_filter(client):
+    from backend.controllers.pod_controller import _svc
+    mock_pod = MagicMock()
+    mock_pod.metadata.name = 'ns-pod'
+    mock_pod.metadata.namespace = 'kube-system'
+    mock_pod.status.phase = 'Running'
+    mock_pod.status.pod_ip = '10.0.0.2'
+    mock_pod.status.conditions = []
+
+    mock_v1 = MagicMock()
+    mock_v1.list_namespaced_pod.return_value = MagicMock(items=[mock_pod])
+    _svc._v1 = mock_v1
+    try:
+        response = client.get('/api/v1/cluster/pods?namespace=kube-system')
+    finally:
+        _svc._v1 = None  # reset cached client
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data['pods'][0]['namespace'] == 'kube-system'
+
+
 def test_yaml_scan_endpoint_detects_issues(client):
     yaml_content = """
 apiVersion: v1
@@ -71,3 +111,10 @@ def test_yaml_scan_endpoint_invalid_yaml(client):
     assert response.status_code == 200
     data = response.json()
     assert data['has_errors'] is True
+
+
+def test_yaml_scan_payload_too_large_returns_422(client):
+    """yaml_content exceeding 512 KB should be rejected with HTTP 422."""
+    oversized = "a: b\n" * (512 * 1024 // 5 + 1)
+    response = client.post('/api/v1/yaml/scan', json={'yaml_content': oversized})
+    assert response.status_code == 422
