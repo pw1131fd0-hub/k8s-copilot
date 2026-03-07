@@ -2,9 +2,9 @@
 from pydantic import BaseModel, field_validator
 from typing import Optional, List
 from datetime import datetime
-import re
 
-_POD_NAME_RE = re.compile(r'^[a-z0-9]([a-z0-9\-]{0,251}[a-z0-9])?$')
+from backend.utils import K8S_NAME_RE
+
 _YAML_MAX_BYTES = 512 * 1024  # 512 KB
 
 
@@ -28,7 +28,7 @@ class DiagnoseRequest(BaseModel):
     @field_validator("namespace")
     @classmethod
     def validate_namespace(cls, v: str) -> str:
-        if not re.match(r'^[a-z0-9]([a-z0-9\-]{0,251}[a-z0-9])?$', v):
+        if not K8S_NAME_RE.match(v):
             raise ValueError("namespace must be a valid Kubernetes name (lowercase alphanumeric and hyphens)")
         return v
 

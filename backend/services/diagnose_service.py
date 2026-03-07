@@ -11,7 +11,7 @@ from backend.services.pod_service import PodService
 class DiagnoseService:
     """Orchestrates AI-powered diagnosis by combining K8s context with LLM analysis."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._pod_service = PodService()
         self._ai_engine_url = os.getenv("AI_ENGINE_URL", "").rstrip("/")
 
@@ -57,10 +57,24 @@ class DiagnoseService:
     def _call_ai_engine_service(self, payload: dict) -> dict:
         """Call the AI Engine microservice via HTTP."""
         try:
-            with httpx.Client(timeout=120.0) as client:
-                response = client.post(f"{self._ai_engine_url}/diagnose", json=payload)
+            with httpx.Client(timeout=120.0) as http_client:
+                response = http_client.post(f"{self._ai_engine_url}/diagnose", json=payload)
                 response.raise_for_status()
                 return response.json()
+        except httpx.TimeoutException as e:
+            return {
+                "root_cause": "AI Engine service call timed out.",
+                "remediation": "Check AI Engine service health and connectivity.",
+                "raw_analysis": str(e),
+                "model_used": "error",
+            }
+        except httpx.HTTPStatusError as e:
+            return {
+                "root_cause": f"AI Engine service returned HTTP {e.response.status_code}.",
+                "remediation": "Check AI Engine service logs for details.",
+                "raw_analysis": str(e),
+                "model_used": "error",
+            }
         except Exception as e:
             return {
                 "root_cause": f"AI Engine service call failed: {e}",

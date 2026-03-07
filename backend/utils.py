@@ -1,6 +1,9 @@
 """Utility helpers for data masking and Kubernetes resource classification."""
 import re
 
+# Kubernetes DNS-subdomain name regex (covers pod names, namespaces, etc.)
+K8S_NAME_RE = re.compile(r'^[a-z0-9]([a-z0-9\-]{0,251}[a-z0-9])?$')
+
 SENSITIVE_PATTERNS = [
     (r'(?i)(password|passwd|token|secret|key|auth|api[_-]?key|credential)\s*[:=]\s*["\']?([\w\-\.\/\+\=]{4,})["\']?', r'\1: [MASKED]'),
     (r'(?i)(bearer\s+)([\w\-\.]{10,})', r'\1[MASKED]'),
