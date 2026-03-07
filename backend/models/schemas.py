@@ -9,6 +9,8 @@ _YAML_MAX_BYTES = 512 * 1024  # 512 KB
 
 
 class PodInfo(BaseModel):
+    """Represents a single Kubernetes pod with basic status fields."""
+
     name: str
     namespace: str
     status: Optional[str]
@@ -17,11 +19,15 @@ class PodInfo(BaseModel):
 
 
 class PodListResponse(BaseModel):
+    """Response model for pod listing endpoints."""
+
     pods: List[PodInfo]
     total: int
 
 
 class DiagnoseRequest(BaseModel):
+    """Request body for triggering AI diagnosis on a pod."""
+
     namespace: str = "default"
     force: bool = False
 
@@ -34,6 +40,8 @@ class DiagnoseRequest(BaseModel):
 
 
 class DiagnoseResponse(BaseModel):
+    """Response model containing AI-generated diagnosis for a Kubernetes pod."""
+
     pod_name: str
     namespace: str
     error_type: Optional[str]
@@ -44,6 +52,8 @@ class DiagnoseResponse(BaseModel):
 
 
 class YamlScanRequest(BaseModel):
+    """Request body for YAML manifest scanning."""
+
     yaml_content: str
     filename: Optional[str] = "manifest.yaml"
 
@@ -56,6 +66,8 @@ class YamlScanRequest(BaseModel):
 
 
 class YamlIssue(BaseModel):
+    """A single issue detected during YAML manifest scanning."""
+
     severity: str  # ERROR | WARNING | INFO
     rule: str
     message: str
@@ -63,6 +75,8 @@ class YamlIssue(BaseModel):
 
 
 class YamlScanResponse(BaseModel):
+    """Response model for YAML scan results, including all detected issues."""
+
     filename: str
     issues: List[YamlIssue]
     total_issues: int
@@ -71,6 +85,8 @@ class YamlScanResponse(BaseModel):
 
 
 class DiagnoseHistoryRecord(BaseModel):
+    """A persisted diagnosis record retrieved from the database."""
+
     id: str
     pod_name: str
     namespace: str

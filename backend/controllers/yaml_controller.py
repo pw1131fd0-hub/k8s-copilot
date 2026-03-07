@@ -8,7 +8,7 @@ _svc = YamlService()
 
 
 @router.post("/scan", response_model=YamlScanResponse)
-async def scan_yaml(request: YamlScanRequest):
+async def scan_yaml(request: YamlScanRequest) -> YamlScanResponse:
     """Scan a Kubernetes YAML manifest for security and reliability anti-patterns."""
     return _svc.scan(request.yaml_content, filename=request.filename or "manifest.yaml")
 
@@ -17,6 +17,6 @@ async def scan_yaml(request: YamlScanRequest):
 async def diff_yaml(
     yaml_a: str = Body(..., embed=True),
     yaml_b: str = Body(..., embed=True),
-):
+) -> dict:
     """Return a deep-diff between two YAML manifests."""
     return _svc.diff(yaml_a, yaml_b)

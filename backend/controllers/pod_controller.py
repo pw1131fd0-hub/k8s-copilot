@@ -9,6 +9,6 @@ _svc = PodService()
 
 
 @router.get("/pods", response_model=PodListResponse)
-async def list_pods(namespace: Optional[str] = Query(None, description="Filter by namespace")):
+async def list_pods(namespace: Optional[str] = Query(None, description="Filter by namespace")) -> PodListResponse:
     """Return all pods visible to the backend, optionally filtered by namespace."""
     return _svc.list_pods(namespace=namespace)

@@ -21,7 +21,7 @@ async def diagnose_pod(
     pod_name: str = Path(..., description="Kubernetes pod name"),
     request: DiagnoseRequest = Body(...),
     db: Session = Depends(get_db),
-):
+) -> DiagnoseResponse:
     """Trigger AI diagnosis for a pod and persist the result to history."""
     if not K8S_NAME_RE.match(pod_name):
         raise HTTPException(status_code=422, detail="Invalid pod name format")
@@ -33,7 +33,7 @@ async def diagnose_pod(
 
 
 @router.get("/history", response_model=List[DiagnoseHistoryRecord])
-async def get_diagnose_history(db: Session = Depends(get_db)):
+async def get_diagnose_history(db: Session = Depends(get_db)) -> List[DiagnoseHistoryRecord]:
     """Return the 50 most recent diagnosis records across all pods."""
     return _repo.get_history(db)
 
@@ -42,7 +42,7 @@ async def get_diagnose_history(db: Session = Depends(get_db)):
 async def get_pod_diagnose_history(
     pod_name: str = Path(..., description="Kubernetes pod name"),
     db: Session = Depends(get_db),
-):
+) -> List[DiagnoseHistoryRecord]:
     """Return diagnosis history for a specific pod, newest first."""
     if not K8S_NAME_RE.match(pod_name):
         raise HTTPException(status_code=422, detail="Invalid pod name format")
