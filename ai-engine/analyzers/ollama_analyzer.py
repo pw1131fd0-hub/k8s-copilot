@@ -26,10 +26,15 @@ class OllamaAnalyzer(BaseAnalyzer):
 
     def analyze(self, prompt: str) -> str:
         """Send prompt to the Ollama generate API and return the response text."""
-        response = httpx.post(
-            f"{self._base_url}/api/generate",
-            json={"model": self._model, "prompt": prompt, "stream": False},
-            timeout=60,
-        )
-        response.raise_for_status()
-        return response.json().get("response", "")
+        try:
+            response = httpx.post(
+                f"{self._base_url}/api/generate",
+                json={"model": self._model, "prompt": prompt, "stream": False},
+                timeout=60,
+            )
+            response.raise_for_status()
+            return response.json().get("response", "")
+        except httpx.HTTPStatusError as exc:
+            raise RuntimeError(f"Ollama returned HTTP {exc.response.status_code}") from exc
+        except httpx.RequestError as exc:
+            raise RuntimeError(f"Ollama request failed: {exc}") from exc

@@ -154,6 +154,13 @@ def test_yaml_diff_invalid_yaml_returns_error_key(client):
     assert 'error' in response.json()
 
 
+def test_yaml_diff_payload_too_large_returns_422(client):
+    """POST /api/v1/yaml/diff with yaml_a exceeding 512 KB should be rejected with HTTP 422."""
+    oversized = "a: b\n" * (512 * 1024 // 5 + 1)
+    response = client.post('/api/v1/yaml/diff', json={'yaml_a': oversized, 'yaml_b': 'foo: bar'})
+    assert response.status_code == 422
+
+
 def test_diagnose_history_endpoint_returns_list(client):
     """GET /api/v1/diagnose/history should return a list (empty is valid)."""
     response = client.get('/api/v1/diagnose/history')

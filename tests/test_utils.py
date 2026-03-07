@@ -30,6 +30,25 @@ class TestMaskSensitiveData:
         result = mask_sensitive_data(text)
         assert 'eyJhbGciOiJSUzI1NiJ9longtokenvalue' not in result
 
+    def test_masks_database_url_password(self):
+        """Database URLs with embedded passwords should have the password redacted."""
+        text = 'postgres://myuser:supersecretpassword@db-host:5432/mydb'
+        result = mask_sensitive_data(text)
+        assert 'supersecretpassword' not in result
+        assert '[MASKED]' in result
+
+    def test_masks_aws_access_key_id(self):
+        """AWS access key IDs (AKIA...) should be redacted."""
+        text = 'AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE'
+        result = mask_sensitive_data(text)
+        assert 'AKIAIOSFODNN7EXAMPLE' not in result
+
+    def test_masks_json_inline_secret(self):
+        """JSON-style inline secrets like "password":"value" should be redacted."""
+        text = '{"password":"hunter2","user":"admin"}'
+        result = mask_sensitive_data(text)
+        assert 'hunter2' not in result
+
     def test_preserves_non_sensitive(self):
         """Non-sensitive text should be returned unchanged."""
         text = 'Hello World, this is a normal message'

@@ -42,7 +42,7 @@ class AIDiagnoser:
             return self._analyzer
 
         # Local-first: try Ollama
-        if os.getenv("OLLAMA_BASE_URL") or os.path.exists("/tmp/ollama_available"):
+        if os.getenv("OLLAMA_BASE_URL"):
             from ai_engine.analyzers.ollama_analyzer import OllamaAnalyzer  # pylint: disable=import-outside-toplevel
             ollama = OllamaAnalyzer()
             if ollama.is_available():
@@ -90,8 +90,22 @@ class AIDiagnoser:
             logs=context.get("logs", "N/A"),
         )
 
+        # Separate provider selection from the API call so we can return
+        # a meaningful model_used value even when the API call fails.
         try:
             analyzer = self._get_analyzer()
+        except RuntimeError as e:
+            return DiagnoseResult(
+                root_cause=f"AI provider not configured: {e}",
+                remediation=(
+                    "Please configure OPENAI_API_KEY, GEMINI_API_KEY, or start Ollama locally."
+                ),
+                raw_analysis=str(e),
+                model_used="none",
+                detailed_analysis=None,
+            )
+
+        try:
             raw_response = analyzer.analyze(prompt)
             model_used = analyzer.model_name
 
@@ -102,18 +116,6 @@ class AIDiagnoser:
                 remediation=parsed["remediation"],
                 raw_analysis=raw_response,
                 model_used=model_used,
-            )
-
-        except RuntimeError as e:
-            # No LLM provider configured - return structured stub
-            return DiagnoseResult(
-                root_cause=f"AI provider not configured: {e}",
-                remediation=(
-                    "Please configure OPENAI_API_KEY, GEMINI_API_KEY, or start Ollama locally."
-                ),
-                raw_analysis=str(e),
-                model_used="none",
-                detailed_analysis=None,
             )
         except Exception as e:  # pylint: disable=broad-exception-caught
             logger.exception(

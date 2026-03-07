@@ -22,9 +22,12 @@ class GeminiAnalyzer(BaseAnalyzer):
 
     def analyze(self, prompt: str) -> str:
         """Send prompt to the Gemini generative model and return the response text."""
-        response = self._client.models.generate_content(
-            model=self._model_id,
-            contents=prompt,
-            config=types.GenerateContentConfig(temperature=0.2, max_output_tokens=1500),
-        )
-        return response.text or ""
+        try:
+            response = self._client.models.generate_content(
+                model=self._model_id,
+                contents=prompt,
+                config=types.GenerateContentConfig(temperature=0.2, max_output_tokens=1500),
+            )
+            return response.text or ""
+        except Exception as exc:  # pylint: disable=broad-exception-caught
+            raise RuntimeError(f"Gemini API call failed: {exc}") from exc

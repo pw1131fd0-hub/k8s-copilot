@@ -12,6 +12,17 @@ SENSITIVE_PATTERNS = [
     ),
     (r'(?i)(bearer\s+)([\w\-\.]{10,})', r'\1[MASKED]'),
     (r'(?i)(basic\s+)([\w\+\/\=]{10,})', r'\1[MASKED]'),
+    # JSON/YAML inline secrets: "password":"value" or password: value
+    (
+        r'(?i)(["\']?(password|passwd|secret|token|api[_-]?key)["\']?\s*:\s*["\']?)'
+        r'([\w\-\.\/\+\=]{4,})["\']?',
+        r'\1[MASKED]',
+    ),
+    # Database URLs with embedded credentials: postgres://user:pass@host
+    (r'(?i)(\w+://[\w\-\.]+:)([\w\-\.\/\+\=\@]{4,})(@)', r'\1[MASKED]\3'),
+    # AWS access key IDs and secret access keys
+    (r'(?i)(AKIA[A-Z0-9]{16})', r'[MASKED-AWS-KEY]'),
+    (r'(?i)(aws[_-]?secret[_-]?access[_-]?key\s*[:=]\s*)([A-Za-z0-9\/\+\=]{20,})', r'\1[MASKED]'),
 ]
 
 

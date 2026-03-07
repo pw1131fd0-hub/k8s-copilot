@@ -21,10 +21,13 @@ class OpenAIAnalyzer(BaseAnalyzer):
 
     def analyze(self, prompt: str) -> str:
         """Send prompt to OpenAI chat completions API and return the response text."""
-        response = self._client.chat.completions.create(
-            model=self._model,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.2,
-            max_tokens=1500,
-        )
-        return response.choices[0].message.content or ""
+        try:
+            response = self._client.chat.completions.create(
+                model=self._model,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.2,
+                max_tokens=1500,
+            )
+            return response.choices[0].message.content or ""
+        except Exception as exc:  # pylint: disable=broad-exception-caught
+            raise RuntimeError(f"OpenAI API call failed: {exc}") from exc

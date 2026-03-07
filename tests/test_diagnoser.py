@@ -2,6 +2,8 @@
 import os
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from ai_engine.diagnoser import AIDiagnoser
 
 
@@ -30,6 +32,18 @@ class TestAIDiagnoserNoProvider:
         assert 'raw_analysis' in result
         assert 'model_used' in result
 
+    def test_ollama_tmp_file_does_not_trigger_provider(self):
+        """Presence of /tmp/ollama_available file must NOT trigger Ollama selection."""
+        env_patch = {'OPENAI_API_KEY': '', 'GEMINI_API_KEY': '', 'OLLAMA_BASE_URL': ''}
+        with patch.dict(os.environ, env_patch):
+            with patch('os.path.exists', return_value=True):
+                diagnoser = AIDiagnoser()
+                diagnoser._analyzer = None  # pylint: disable=protected-access
+                result = diagnoser.diagnose(SAMPLE_CONTEXT)
+        # Without OLLAMA_BASE_URL the file should be irrelevant – fallback stub expected
+        assert 'root_cause' in result
+        assert result['model_used'] in ('none', 'error')
+
 
 class TestAIDiagnoserWithMock:
     """Tests for AIDiagnoser with mocked LLM providers."""
@@ -52,6 +66,32 @@ class TestAIDiagnoserWithMock:
         assert result['root_cause'] == 'DB connection refused'
         assert 'kubectl exec' in result['remediation']
         assert result['model_used'].startswith('openai/')
+
+    def test_openai_api_error_returns_fallback(self):
+        """When OpenAI raises an exception, diagnose() should return an error stub."""
+        env = {'OPENAI_API_KEY': 'sk-test', 'GEMINI_API_KEY': '', 'OLLAMA_BASE_URL': ''}
+        with patch.dict(os.environ, env):
+            with patch('ai_engine.analyzers.openai_analyzer.OpenAI') as mock_openai:
+                mock_client = MagicMock()
+                mock_openai.return_value = mock_client
+                mock_client.chat.completions.create.side_effect = Exception("Rate limit exceeded")
+                diagnoser = AIDiagnoser()
+                result = diagnoser.diagnose(SAMPLE_CONTEXT)
+        assert 'root_cause' in result
+        assert result['model_used'] == 'error'
+
+    def test_gemini_api_error_returns_fallback(self):
+        """When Gemini raises an exception, diagnose() should return an error stub."""
+        env = {'OPENAI_API_KEY': '', 'GEMINI_API_KEY': 'test-key', 'OLLAMA_BASE_URL': ''}
+        with patch.dict(os.environ, env):
+            with patch('ai_engine.analyzers.gemini_analyzer.genai') as mock_genai:
+                mock_client = MagicMock()
+                mock_genai.Client.return_value = mock_client
+                mock_client.models.generate_content.side_effect = Exception("API quota exceeded")
+                diagnoser = AIDiagnoser()
+                result = diagnoser.diagnose(SAMPLE_CONTEXT)
+        assert 'root_cause' in result
+        assert result['model_used'] == 'error'
 
     def test_parse_response_handles_malformed_json(self):
         """_parse_response should return a valid dict even when the LLM returns non-JSON."""
@@ -114,3 +154,30 @@ class TestAIDiagnoserGeminiFallback:
             diagnoser = AIDiagnoser()
             result = diagnoser.suggest("Explain this Kubernetes issue")
         assert isinstance(result, str)
+
+
+class TestOllamaAnalyzer:
+    """Tests for OllamaAnalyzer error handling in analyze()."""
+
+    def test_analyze_raises_runtime_error_on_http_status_error(self):
+        """analyze() should raise RuntimeError when Ollama returns a non-2xx HTTP status."""
+        import httpx  # pylint: disable=import-outside-toplevel
+        from ai_engine.analyzers.ollama_analyzer import OllamaAnalyzer  # pylint: disable=import-outside-toplevel
+        analyzer = OllamaAnalyzer()
+        mock_response = MagicMock()
+        mock_response.status_code = 500
+        mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
+            "Server error", request=MagicMock(), response=mock_response
+        )
+        with patch('httpx.post', return_value=mock_response):
+            with pytest.raises(RuntimeError, match="Ollama returned HTTP"):
+                analyzer.analyze("test prompt")
+
+    def test_analyze_raises_runtime_error_on_request_error(self):
+        """analyze() should raise RuntimeError when the Ollama request fails (e.g. connection)."""
+        import httpx  # pylint: disable=import-outside-toplevel
+        from ai_engine.analyzers.ollama_analyzer import OllamaAnalyzer  # pylint: disable=import-outside-toplevel
+        analyzer = OllamaAnalyzer()
+        with patch('httpx.post', side_effect=httpx.ConnectError("Connection refused")):
+            with pytest.raises(RuntimeError, match="Ollama request failed"):
+                analyzer.analyze("test prompt")
