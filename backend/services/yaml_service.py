@@ -159,7 +159,7 @@ class YamlService:
             logger.debug("AI suggestions via local import failed: %s", e)
             return None
 
-    def diff(self, yaml_a: str, yaml_b: str) -> dict:
+    def diff(self, yaml_a: str, yaml_b: str) -> dict[str, Any]:
         """Compare two YAML strings and return their differences."""
         try:
             doc_a = yaml.safe_load(yaml_a)

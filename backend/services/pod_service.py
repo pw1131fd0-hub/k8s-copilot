@@ -1,6 +1,7 @@
 """Service layer for Kubernetes pod listing and context collection."""
 import logging
 import os
+from typing import TypedDict
 from kubernetes import client
 from kubernetes.client.exceptions import ApiException
 from urllib3.exceptions import MaxRetryError, ReadTimeoutError
@@ -12,6 +13,16 @@ logger = logging.getLogger(__name__)
 _K8S_LIST_TIMEOUT = int(os.getenv("K8S_LIST_TIMEOUT", "30"))   # seconds – used for pod/event list calls
 _K8S_READ_TIMEOUT = int(os.getenv("K8S_READ_TIMEOUT", "15"))   # seconds – used for single-object reads
 _K8S_LOG_TIMEOUT = int(os.getenv("K8S_LOG_TIMEOUT", "20"))     # seconds – used for log streaming
+
+
+class PodContext(TypedDict):
+    """Pod diagnostic context collected from the Kubernetes API."""
+
+    pod_name: str
+    namespace: str
+    describe: str
+    logs: str
+    error_type: str
 
 
 class PodService:
@@ -66,10 +77,16 @@ class PodService:
 
         return PodListResponse(pods=pod_list, total=len(pod_list))
 
-    def get_pod_context(self, pod_name: str, namespace: str = "default") -> dict:
+    def get_pod_context(self, pod_name: str, namespace: str = "default") -> PodContext:
         """Collect describe output and recent logs for a pod."""
         v1 = self._get_v1()
-        context = {"pod_name": pod_name, "namespace": namespace, "describe": "", "logs": "", "error_type": "Unknown"}
+        context = PodContext(
+            pod_name=pod_name,
+            namespace=namespace,
+            describe="",
+            logs="",
+            error_type="Unknown",
+        )
 
         try:
             pod = v1.read_namespaced_pod(

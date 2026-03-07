@@ -17,6 +17,7 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
+    """Create the initial database schema with projects and diagnose_history tables."""
     op.create_table(
         "projects",
         sa.Column("id", sa.String(), nullable=False),
@@ -37,5 +38,6 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
+    """Drop diagnose_history and projects tables, reverting the initial schema."""
     op.drop_table("diagnose_history")
     op.drop_table("projects")
