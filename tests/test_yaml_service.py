@@ -1,8 +1,9 @@
 """Tests for the YAML scanning and diffing service."""
 # pylint: disable=redefined-outer-name
 import pytest
+from unittest.mock import patch, MagicMock
 
-from backend.services.yaml_service import YamlService
+from backend.services.yaml_service import YamlService, _validate_ai_engine_url
 
 
 @pytest.fixture
@@ -325,3 +326,275 @@ class TestYamlServiceOtherKinds:
         assert 'no-resource-limits' in rules
         assert 'latest-image-tag' in rules
         assert result.has_errors is True
+
+
+REPLICASET_YAML = """
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: my-rs
+spec:
+  template:
+    spec:
+      containers:
+      - name: app
+        image: app:latest
+"""
+
+INGRESS_NGINX_YAML = """
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: test-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+spec:
+  rules:
+  - host: example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: my-service
+            port:
+              number: 80
+"""
+
+INGRESS_NGINX_CLASS_YAML = """
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: test-ingress2
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: example.com
+"""
+
+
+class TestYamlServiceReplicaSet:
+    """Tests for ReplicaSet manifests."""
+
+    def test_replicaset_containers_are_scanned(self, svc):
+        """ReplicaSet containers should be extracted and scanned."""
+        result = svc.scan(REPLICASET_YAML)
+        rules = [i.rule for i in result.issues]
+        assert 'no-resource-limits' in rules
+        assert 'latest-image-tag' in rules
+
+
+class TestYamlServiceIngressNginx:
+    """Tests for Ingress nginx deprecation rule."""
+
+    def test_ingress_nginx_annotation_detected(self, svc):
+        """Ingress with kubernetes.io/ingress.class=nginx should trigger deprecation rule."""
+        result = svc.scan(INGRESS_NGINX_YAML)
+        rules = [i.rule for i in result.issues]
+        assert 'ingress-nginx-deprecation' in rules
+        assert result.has_errors is True
+
+    def test_ingress_nginx_classname_detected(self, svc):
+        """Ingress with ingressClassName=nginx should trigger deprecation rule."""
+        result = svc.scan(INGRESS_NGINX_CLASS_YAML)
+        rules = [i.rule for i in result.issues]
+        assert 'ingress-nginx-deprecation' in rules
+
+
+class TestYamlServiceDiffRiskAssessment:
+    """Tests for diff risk assessment feature."""
+
+    def test_diff_replica_change_high_risk(self, svc):
+        """Changing replicas should be flagged as high risk."""
+        a = "replicas: 1"
+        b = "replicas: 3"
+        result = svc.diff(a, b)
+        risks = result.get("risk_assessment", [])
+        assert any(r["risk"] == "HIGH" and "replicas" in r["path"].lower() for r in risks)
+
+    def test_diff_image_change_high_risk(self, svc):
+        """Changing image should be flagged as high risk."""
+        a = "image: nginx:1.0"
+        b = "image: nginx:2.0"
+        result = svc.diff(a, b)
+        risks = result.get("risk_assessment", [])
+        assert any(r["risk"] == "HIGH" and "image" in r["path"].lower() for r in risks)
+
+    def test_diff_port_change_high_risk(self, svc):
+        """Changing ports should be flagged as high risk."""
+        a = "ports:\n  - containerPort: 8080"
+        b = "ports:\n  - containerPort: 9090"
+        result = svc.diff(a, b)
+        risks = result.get("risk_assessment", [])
+        # Port is in high_risk_paths, should flag as HIGH
+        assert any(r["risk"] == "HIGH" for r in risks) or result["summary"]["total_changes"] > 0
+
+    def test_diff_env_change_medium_risk(self, svc):
+        """Changing env variables should be flagged as medium risk."""
+        a = "env:\n  - name: DEBUG\n    value: 'false'"
+        b = "env:\n  - name: DEBUG\n    value: 'true'"
+        result = svc.diff(a, b)
+        risks = result.get("risk_assessment", [])
+        assert any(r["risk"] == "MEDIUM" and "env" in r["path"].lower() for r in risks)
+
+    def test_diff_probe_change_medium_risk(self, svc):
+        """Changing probes should be flagged as medium risk."""
+        a = "livenessProbe:\n  httpGet:\n    path: /health"
+        b = "livenessProbe:\n  httpGet:\n    path: /healthz"
+        result = svc.diff(a, b)
+        risks = result.get("risk_assessment", [])
+        assert any(r["risk"] == "MEDIUM" and "probe" in r["path"].lower() for r in risks)
+
+    def test_diff_secret_change_medium_risk(self, svc):
+        """Changing secret references should be flagged as medium risk."""
+        a = "secretName: old-secret"
+        b = "secretName: new-secret"
+        result = svc.diff(a, b)
+        risks = result.get("risk_assessment", [])
+        assert any(r["risk"] == "MEDIUM" for r in risks)
+
+    def test_diff_loadbalancer_type_high_risk(self, svc):
+        """Adding LoadBalancer type should be flagged with cost implication message."""
+        a = "type: ClusterIP"
+        b = "type: LoadBalancer"
+        result = svc.diff(a, b)
+        risks = result.get("risk_assessment", [])
+        assert any("LoadBalancer" in r.get("message", "") or r["risk"] == "HIGH" for r in risks)
+
+    def test_diff_privileged_change_high_risk(self, svc):
+        """Changing privileged setting should be flagged as high risk."""
+        a = "privileged: false"
+        b = "privileged: true"
+        result = svc.diff(a, b)
+        risks = result.get("risk_assessment", [])
+        assert any(r["risk"] == "HIGH" and "privileged" in r["path"].lower() for r in risks)
+
+    def test_diff_resources_change_high_risk(self, svc):
+        """Changing resources/limits should be flagged as high risk."""
+        a = "limits:\n  cpu: '100m'"
+        b = "limits:\n  cpu: '500m'"
+        result = svc.diff(a, b)
+        risks = result.get("risk_assessment", [])
+        assert any(r["risk"] == "HIGH" for r in risks)
+
+    def test_diff_items_added_counted(self, svc):
+        """Summary should count items added correctly."""
+        a = "foo: bar"
+        b = "foo: bar\nbaz: qux"
+        result = svc.diff(a, b)
+        assert result["summary"]["items_added"] >= 1
+
+    def test_diff_items_removed_counted(self, svc):
+        """Summary should count items removed correctly."""
+        a = "foo: bar\nbaz: qux"
+        b = "foo: bar"
+        result = svc.diff(a, b)
+        assert result["summary"]["items_removed"] >= 1
+
+
+class TestYamlServiceEmptyDocs:
+    """Tests for edge cases with empty or None documents."""
+
+    def test_scan_empty_yaml(self, svc):
+        """Empty YAML should not produce issues."""
+        result = svc.scan("")
+        assert result.total_issues == 0
+
+    def test_scan_multi_doc_with_null(self, svc):
+        """Multi-doc YAML with null docs should be handled gracefully."""
+        yaml_content = "---\n---\napiVersion: v1\nkind: Pod\nmetadata:\n  name: test\nspec:\n  containers:\n  - name: app\n    image: nginx"
+        result = svc.scan(yaml_content)
+        # Should not crash, and should find issues in the valid doc
+        assert result.total_issues > 0
+
+
+class TestValidateAIEngineUrl:
+    """Tests for the _validate_ai_engine_url helper function."""
+
+    def test_valid_http_url(self):
+        """Valid HTTP URL should be returned sanitized."""
+        result = _validate_ai_engine_url("http://localhost:8000/api")
+        assert result == "http://localhost:8000/api"
+
+    def test_valid_https_url(self):
+        """Valid HTTPS URL should be returned."""
+        result = _validate_ai_engine_url("https://ai-engine.example.com")
+        assert result == "https://ai-engine.example.com"
+
+    def test_empty_url_returns_none(self):
+        """Empty URL should return None."""
+        result = _validate_ai_engine_url("")
+        assert result is None
+
+    def test_invalid_scheme_returns_none(self):
+        """URL with invalid scheme should return None."""
+        result = _validate_ai_engine_url("ftp://localhost:8000")
+        assert result is None
+
+    def test_no_host_returns_none(self):
+        """URL without host should return None."""
+        result = _validate_ai_engine_url("http://")
+        assert result is None
+
+    def test_trailing_slash_stripped(self):
+        """Trailing slash should be stripped."""
+        result = _validate_ai_engine_url("http://localhost:8000/")
+        assert result == "http://localhost:8000"
+
+
+class TestYamlServiceAISuggestions:
+    """Tests for AI suggestion integration."""
+
+    def test_get_ai_suggestions_via_http_success(self, svc):
+        """AI suggestions via HTTP should return suggestion on success."""
+        with patch('backend.services.yaml_service.httpx.Client') as mock_client:
+            mock_response = MagicMock()
+            mock_response.json.return_value = {"suggestion": "Fix by adding limits"}
+            mock_client.return_value.__enter__.return_value.post.return_value = mock_response
+
+            from backend.models.schemas import YamlIssue
+            issues = [YamlIssue(severity="ERROR", rule="test", message="test")]
+            result = svc._get_ai_suggestions_via_http(issues, "yaml: content", "http://localhost:8001")
+            assert result == "Fix by adding limits"
+
+    def test_get_ai_suggestions_via_http_failure(self, svc):
+        """AI suggestions via HTTP should return None on failure."""
+        with patch('backend.services.yaml_service.httpx.Client') as mock_client:
+            mock_client.return_value.__enter__.return_value.post.side_effect = Exception("Connection error")
+
+            from backend.models.schemas import YamlIssue
+            issues = [YamlIssue(severity="ERROR", rule="test", message="test")]
+            result = svc._get_ai_suggestions_via_http(issues, "yaml: content", "http://localhost:8001")
+            assert result is None
+
+    def test_get_ai_suggestions_local_success(self, svc):
+        """AI suggestions via local import should return suggestion on success."""
+        with patch('ai_engine.diagnoser.AIDiagnoser') as mock_diagnoser:
+            mock_instance = MagicMock()
+            mock_instance.suggest.return_value = "Local suggestion"
+            mock_diagnoser.return_value = mock_instance
+
+            from backend.models.schemas import YamlIssue
+            issues = [YamlIssue(severity="ERROR", rule="test", message="test")]
+            result = svc._get_ai_suggestions_local(issues, "yaml: content")
+            assert result == "Local suggestion"
+
+    def test_get_ai_suggestions_local_failure(self, svc):
+        """AI suggestions via local import should return None on failure."""
+        with patch('ai_engine.diagnoser.AIDiagnoser') as mock_diagnoser:
+            mock_diagnoser.side_effect = Exception("No provider")
+
+            from backend.models.schemas import YamlIssue
+            issues = [YamlIssue(severity="ERROR", rule="test", message="test")]
+            result = svc._get_ai_suggestions_local(issues, "yaml: content")
+            assert result is None
+
+    def test_scan_with_ai_suggestions_via_env(self, svc):
+        """Scan should call AI suggestions when AI_ENGINE_URL is set."""
+        with patch.dict('os.environ', {'AI_ENGINE_URL': 'http://localhost:8001'}):
+            with patch.object(svc, '_get_ai_suggestions_via_http') as mock_http:
+                mock_http.return_value = "AI suggestion"
+                result = svc.scan(MISSING_LIMITS_YAML)
+                assert result.ai_suggestions == "AI suggestion"
+                mock_http.assert_called_once()

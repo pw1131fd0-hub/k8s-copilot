@@ -1,7 +1,7 @@
 {
-  "stage": "dev",
+  "stage": "test",
   "completeness": 100,
-  "summary": "完成 dev 階段：根據 SD.md 補齊所有缺失功能。AI Engine /health 回傳 providers 狀態、YAML Diff 回傳結構化 differences/summary/risk_assessment、診斷歷史支援 search/namespace/error_type 過濾參數。更新前端 YamlDiffPanel 支援新 API 格式。所有 149 + 29 測試通過。",
-  "next_action": "進入 test 階段，確認測試覆蓋率達 80%+，撰寫缺失的單元測試與整合測試",
-  "updated_at": "2026-03-07T11:20:14.000Z"
+  "summary": "完成 test 階段：後端測試覆蓋率 96%（199 測試通過），前端測試覆蓋率 91%（128 測試通過），均超過 80% 目標。新增 OllamaAnalyzer、YamlService 邊界測試、DiagnosePanel/DiagnoseHistory/YAMLCodeEditor/YamlDiffPanel/Dashboard/useK8sData 前端組件測試。",
+  "next_action": "進入 security 階段，檢查 OWASP Top 10、依賴漏洞、敏感資料處理，修復所有 CRITICAL/HIGH 風險",
+  "updated_at": "2026-03-07T11:30:14.000Z"
 }

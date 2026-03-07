@@ -181,3 +181,99 @@ class TestOllamaAnalyzer:
         with patch('httpx.post', side_effect=httpx.ConnectError("Connection refused")):
             with pytest.raises(RuntimeError, match="Ollama request failed"):
                 analyzer.analyze("test prompt")
+
+
+class TestAIDiagnoserAnalyzerCaching:
+    """Tests for AIDiagnoser analyzer caching and routing logic."""
+
+    def test_analyzer_cached_on_second_call(self):
+        """_get_analyzer should return cached analyzer on subsequent calls."""
+        env = {'OPENAI_API_KEY': 'sk-test', 'GEMINI_API_KEY': '', 'OLLAMA_BASE_URL': ''}
+        with patch.dict(os.environ, env):
+            with patch('ai_engine.analyzers.openai_analyzer.OpenAI'):
+                diagnoser = AIDiagnoser()
+                analyzer1 = diagnoser._get_analyzer()  # pylint: disable=protected-access
+                analyzer2 = diagnoser._get_analyzer()  # pylint: disable=protected-access
+                assert analyzer1 is analyzer2
+
+    def test_ollama_is_available_true_uses_ollama(self):
+        """Should use Ollama when OLLAMA_BASE_URL is set and Ollama is available."""
+        env = {'OPENAI_API_KEY': 'sk-test', 'GEMINI_API_KEY': '', 'OLLAMA_BASE_URL': 'http://localhost:11434'}
+        with patch.dict(os.environ, env):
+            with patch('ai_engine.analyzers.ollama_analyzer.OllamaAnalyzer.is_available', return_value=True):
+                diagnoser = AIDiagnoser()
+                analyzer = diagnoser._get_analyzer()  # pylint: disable=protected-access
+                assert 'ollama' in analyzer.model_name.lower()
+
+    def test_ollama_not_available_falls_back_to_openai(self):
+        """Should fall back to OpenAI when Ollama is configured but not available."""
+        env = {'OPENAI_API_KEY': 'sk-test', 'GEMINI_API_KEY': '', 'OLLAMA_BASE_URL': 'http://localhost:11434'}
+        with patch.dict(os.environ, env):
+            with patch('ai_engine.analyzers.ollama_analyzer.OllamaAnalyzer.is_available', return_value=False):
+                with patch('ai_engine.analyzers.openai_analyzer.OpenAI'):
+                    diagnoser = AIDiagnoser()
+                    analyzer = diagnoser._get_analyzer()  # pylint: disable=protected-access
+                    assert 'openai' in analyzer.model_name.lower()
+
+
+class TestAIDiagnoserSuggest:
+    """Tests for the AIDiagnoser.suggest method."""
+
+    def test_suggest_returns_result_with_provider(self):
+        """suggest() should return AI response when provider is available."""
+        env = {'OPENAI_API_KEY': 'sk-test', 'GEMINI_API_KEY': '', 'OLLAMA_BASE_URL': ''}
+        with patch.dict(os.environ, env):
+            with patch('ai_engine.analyzers.openai_analyzer.OpenAI') as mock_openai:
+                mock_client = MagicMock()
+                mock_openai.return_value = mock_client
+                mock_client.chat.completions.create.return_value = MagicMock(
+                    choices=[MagicMock(message=MagicMock(content="This is the suggestion"))]
+                )
+                diagnoser = AIDiagnoser()
+                result = diagnoser.suggest("Explain K8s probes")
+        assert result == "This is the suggestion"
+
+    def test_suggest_returns_empty_on_unexpected_error(self):
+        """suggest() should return empty string on unexpected exception."""
+        env = {'OPENAI_API_KEY': 'sk-test', 'GEMINI_API_KEY': '', 'OLLAMA_BASE_URL': ''}
+        with patch.dict(os.environ, env):
+            with patch('ai_engine.analyzers.openai_analyzer.OpenAI') as mock_openai:
+                mock_client = MagicMock()
+                mock_openai.return_value = mock_client
+                mock_client.chat.completions.create.side_effect = ValueError("Unexpected error")
+                diagnoser = AIDiagnoser()
+                result = diagnoser.suggest("Explain K8s probes")
+        assert result == ""
+
+
+class TestAIDiagnoserParseResponse:
+    """Additional tests for _parse_response edge cases."""
+
+    def test_parse_response_empty_string(self):
+        """_parse_response should handle empty string gracefully."""
+        diagnoser = AIDiagnoser()
+        result = diagnoser._parse_response("")  # pylint: disable=protected-access
+        assert result['root_cause'] == "No analysis available"
+        assert result['detailed_analysis'] is None
+
+    def test_parse_response_truncates_long_text(self):
+        """_parse_response should truncate root_cause if raw text is very long."""
+        diagnoser = AIDiagnoser()
+        long_text = "A" * 1000
+        result = diagnoser._parse_response(long_text)  # pylint: disable=protected-access
+        assert len(result['root_cause']) <= 500
+
+    def test_parse_response_json_without_fence(self):
+        """_parse_response should handle JSON without markdown fence."""
+        diagnoser = AIDiagnoser()
+        raw = '{"root_cause": "Memory issue", "remediation": "Add more RAM", "detailed_analysis": "Details here"}'
+        result = diagnoser._parse_response(raw)  # pylint: disable=protected-access
+        assert result['root_cause'] == "Memory issue"
+        assert result['detailed_analysis'] == "Details here"
+
+    def test_parse_response_json_with_empty_detailed_analysis(self):
+        """_parse_response should convert empty detailed_analysis to None."""
+        diagnoser = AIDiagnoser()
+        raw = '{"root_cause": "Issue", "remediation": "Fix it", "detailed_analysis": ""}'
+        result = diagnoser._parse_response(raw)  # pylint: disable=protected-access
+        assert result['detailed_analysis'] is None
