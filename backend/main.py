@@ -30,7 +30,7 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
             config.load_incluster_config()
         else:
             config.load_kube_config()
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-exception-caught
         logger.warning('Could not load K8s config: %s', e)
     yield
 
@@ -89,7 +89,7 @@ async def get_cluster_status() -> dict[str, str]:
         v1 = client.CoreV1Api()
         v1.list_namespace(limit=1, _request_timeout=10)
         return {"status": "connected"}
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-exception-caught
         logger.debug("K8s cluster unreachable: %s", e)
         return {"status": "disconnected"}
 

@@ -21,7 +21,7 @@ class OllamaAnalyzer(BaseAnalyzer):
         try:
             resp = httpx.get(f"{self._base_url}/api/tags", timeout=3)
             return resp.status_code == 200
-        except Exception:
+        except Exception:  # pylint: disable=broad-exception-caught
             return False
 
     def analyze(self, prompt: str) -> str:

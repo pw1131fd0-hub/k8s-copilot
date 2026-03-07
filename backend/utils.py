@@ -38,6 +38,6 @@ def is_secret_resource(yaml_dict: dict) -> bool:
 
 
 if __name__ == '__main__':
-    test_str = 'The database password is "admin123" and api_key=xyz-123 bearer eyJhbGc...'
-    print(f'Original: {test_str}')
-    print(f'Masked:   {mask_sensitive_data(test_str)}')
+    _example = 'The database password is "admin123" and api_key=xyz-123 bearer eyJhbGc...'  # pylint: disable=invalid-name
+    print(f'Original: {_example}')
+    print(f'Masked:   {mask_sensitive_data(_example)}')

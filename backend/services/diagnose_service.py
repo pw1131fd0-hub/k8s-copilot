@@ -58,7 +58,7 @@ class DiagnoseService:
         try:
             db.add(record)
             db.commit()
-        except Exception as db_err:
+        except Exception as db_err:  # pylint: disable=broad-exception-caught
             db.rollback()
             logger.error(
                 "Failed to persist diagnosis for pod %s/%s: %s", namespace, pod_name, db_err
@@ -105,7 +105,7 @@ class DiagnoseService:
                 model_used="error",
                 detailed_analysis=None,
             )
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             return AIResult(
                 root_cause=f"AI Engine service call failed: {e}",
                 remediation="Check AI Engine service connectivity.",
@@ -116,7 +116,7 @@ class DiagnoseService:
 
     def _call_ai_engine_local(self, payload: dict) -> AIResult:
         """Call AI Engine via direct Python import (local development)."""
-        from ai_engine.diagnoser import AIDiagnoser
+        from ai_engine.diagnoser import AIDiagnoser  # pylint: disable=import-outside-toplevel
         diagnoser = AIDiagnoser()
         result = diagnoser.diagnose(payload)
         return AIResult(

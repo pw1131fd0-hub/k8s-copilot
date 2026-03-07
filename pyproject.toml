@@ -1,0 +1,12 @@
+[tool.pylint.main]
+# Extend ignore list for generated/third-party migration files
+ignore-paths = ["backend/migrations"]
+
+[tool.pylint.design]
+# ORM model classes and service classes legitimately have few public methods
+min-public-methods = 1
+
+[tool.pylint.messages_control]
+# R0801 duplicate-code: shared schema fields between ai_engine and backend are intentional
+# R0401 cyclic-import: SQLAlchemy Base → ORM models lazy import is a known safe pattern
+disable = ["duplicate-code", "cyclic-import"]

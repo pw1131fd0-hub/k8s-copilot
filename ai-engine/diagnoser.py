@@ -41,7 +41,7 @@ class AIDiagnoser:
 
         # Local-first: try Ollama
         if os.getenv("OLLAMA_BASE_URL") or os.path.exists("/tmp/ollama_available"):
-            from ai_engine.analyzers.ollama_analyzer import OllamaAnalyzer
+            from ai_engine.analyzers.ollama_analyzer import OllamaAnalyzer  # pylint: disable=import-outside-toplevel
             ollama = OllamaAnalyzer()
             if ollama.is_available():
                 self._analyzer = ollama
@@ -49,13 +49,13 @@ class AIDiagnoser:
 
         # Cloud fallback: OpenAI
         if os.getenv("OPENAI_API_KEY"):
-            from ai_engine.analyzers.openai_analyzer import OpenAIAnalyzer
+            from ai_engine.analyzers.openai_analyzer import OpenAIAnalyzer  # pylint: disable=import-outside-toplevel
             self._analyzer = OpenAIAnalyzer()
             return self._analyzer
 
         # Cloud fallback: Gemini
         if os.getenv("GEMINI_API_KEY"):
-            from ai_engine.analyzers.gemini_analyzer import GeminiAnalyzer
+            from ai_engine.analyzers.gemini_analyzer import GeminiAnalyzer  # pylint: disable=import-outside-toplevel
             self._analyzer = GeminiAnalyzer()
             return self._analyzer
 
@@ -70,7 +70,7 @@ class AIDiagnoser:
             return analyzer.analyze(prompt)
         except RuntimeError:
             return ""
-        except Exception:
+        except Exception:  # pylint: disable=broad-exception-caught
             logger.exception("Unexpected error during AI suggestion")
             return ""
 
@@ -113,7 +113,7 @@ class AIDiagnoser:
                 model_used="none",
                 detailed_analysis=None,
             )
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             logger.exception(
                 "Unexpected error during AI diagnosis for pod '%s'", context.get("pod_name")
             )
@@ -151,11 +151,11 @@ class AIDiagnoser:
 
 if __name__ == '__main__':
     engine = AIDiagnoser()
-    result = engine.diagnose({
+    diagnosis_result = engine.diagnose({  # pylint: disable=invalid-name
         "pod_name": "test-pod",
         "namespace": "default",
         "error_type": "CrashLoopBackOff",
         "describe": "Phase: Failed",
         "logs": "Error: cannot connect to database",
     })
-    print(result)
+    print(diagnosis_result)

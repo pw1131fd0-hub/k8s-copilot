@@ -6,7 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from backend.database import Base
 
 
-class Project(Base):
+class Project(Base):  # pylint: disable=too-few-public-methods
     """ORM model representing a monitored Kubernetes project/cluster context."""
 
     __tablename__ = "projects"
@@ -16,7 +16,7 @@ class Project(Base):
     k8s_context: Mapped[str] = mapped_column(String, nullable=False)
 
 
-class DiagnoseHistory(Base):
+class DiagnoseHistory(Base):  # pylint: disable=too-few-public-methods
     """ORM model storing AI diagnosis results for auditing and history lookup."""
 
     __tablename__ = "diagnose_history"

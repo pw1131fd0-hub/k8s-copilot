@@ -56,7 +56,7 @@ class PodService:
         except ApiException as e:
             logger.warning("K8s API error listing pods: HTTP %s – %s", e.status, e.reason)
             return PodListResponse(pods=[], total=0)
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             logger.error("Unexpected error listing pods: %s", e)
             return PodListResponse(pods=[], total=0)
 
@@ -133,7 +133,7 @@ class PodService:
                 "K8s API error describing pod %s/%s: HTTP %s", namespace, pod_name, e.status
             )
             context["describe"] = f"K8s API error ({e.status}): {e.reason}"
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             logger.error("Unexpected error describing pod %s/%s: %s", namespace, pod_name, e)
             context["describe"] = f"Could not describe pod: {e}"
 
@@ -155,7 +155,7 @@ class PodService:
                 "K8s API error fetching logs for %s/%s: HTTP %s", namespace, pod_name, e.status
             )
             context["logs"] = f"K8s API error fetching logs ({e.status}): {e.reason}"
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             logger.error("Unexpected error fetching logs for %s/%s: %s", namespace, pod_name, e)
             context["logs"] = f"Could not retrieve logs: {e}"
 

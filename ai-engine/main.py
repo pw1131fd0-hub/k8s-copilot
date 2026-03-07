@@ -15,14 +15,14 @@ load_dotenv()
 app = FastAPI(title="Lobster AI Engine", version="1.0.0")
 
 # Module-level singleton – avoids repeated Ollama is_available() probes per request.
-_diagnoser: AIDiagnoser | None = None
+_diagnoser: AIDiagnoser | None = None  # pylint: disable=invalid-name
 
 
 def _get_diagnoser() -> AIDiagnoser:
     """Return the shared AIDiagnoser singleton, creating it on first use."""
-    global _diagnoser  # noqa: PLW0603 – intentional module-level singleton
+    global _diagnoser  # noqa: PLW0603 – intentional module-level singleton  # pylint: disable=global-statement
     if _diagnoser is None:
-        from ai_engine.diagnoser import AIDiagnoser  # noqa: PLC0415
+        from ai_engine.diagnoser import AIDiagnoser  # noqa: PLC0415  # pylint: disable=import-outside-toplevel
         _diagnoser = AIDiagnoser()
     return _diagnoser
 

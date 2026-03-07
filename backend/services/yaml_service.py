@@ -147,7 +147,7 @@ class YamlService:
         self, issues: list[YamlIssue], yaml_content: str, ai_engine_url: str
     ) -> str | None:
         """Fetch AI suggestions from the AI Engine microservice via HTTP."""
-        from ai_engine.prompts.k8s_prompts import YAML_SCAN_PROMPT_TEMPLATE
+        from ai_engine.prompts.k8s_prompts import YAML_SCAN_PROMPT_TEMPLATE  # pylint: disable=import-outside-toplevel
         issues_text = "\n".join(f"- [{i.severity}] {i.rule}: {i.message}" for i in issues)
         prompt = YAML_SCAN_PROMPT_TEMPLATE.format(
             issues=issues_text,
@@ -158,7 +158,7 @@ class YamlService:
                 resp = http.post(f"{ai_engine_url}/suggest", json={"prompt": prompt})
                 resp.raise_for_status()
                 return resp.json().get("suggestion") or None
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             logger.debug("AI suggestions via HTTP failed: %s", e)
             return None
 
@@ -167,8 +167,8 @@ class YamlService:
     ) -> str | None:
         """Fetch AI suggestions using the local AIDiagnoser import (development mode)."""
         try:
-            from ai_engine.diagnoser import AIDiagnoser
-            from ai_engine.prompts.k8s_prompts import YAML_SCAN_PROMPT_TEMPLATE
+            from ai_engine.diagnoser import AIDiagnoser  # pylint: disable=import-outside-toplevel
+            from ai_engine.prompts.k8s_prompts import YAML_SCAN_PROMPT_TEMPLATE  # pylint: disable=import-outside-toplevel
             issues_text = "\n".join(f"- [{i.severity}] {i.rule}: {i.message}" for i in issues)
             prompt = YAML_SCAN_PROMPT_TEMPLATE.format(
                 issues=issues_text,
@@ -176,7 +176,7 @@ class YamlService:
             )
             result = AIDiagnoser().suggest(prompt)
             return result or None
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             logger.debug("AI suggestions via local import failed: %s", e)
             return None
 
@@ -187,5 +187,5 @@ class YamlService:
             doc_b = yaml.safe_load(yaml_b)
             diff = DeepDiff(doc_a, doc_b, ignore_order=True)
             return diff.to_dict() if diff else {}
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             return {"error": str(e)}
