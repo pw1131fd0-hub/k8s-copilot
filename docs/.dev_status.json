@@ -1,7 +1,0 @@
-{
-  "stage": "done",
-  "completeness": 100,
-  "summary": "專案已完成：PRD/SA/SD 文件完整、80 項測試全數通過、前後端建置成功、資安審計已執行並修復所有高風險漏洞",
-  "next_action": "專案已可部署上線，建議進行 production 環境的 LOBSTER_API_KEY 設定與 HTTPS 配置",
-  "updated_at": "2026-03-07T05:33:00.000Z"
-}
