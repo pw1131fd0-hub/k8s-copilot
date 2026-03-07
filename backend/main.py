@@ -4,7 +4,7 @@ import os
 import pathlib
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -22,7 +22,7 @@ limiter = Limiter(key_func=get_remote_address)
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
     init_db()
     try:
         if os.getenv('KUBERNETES_SERVICE_HOST'):
@@ -79,7 +79,7 @@ async def root() -> dict[str, str]:
 
 
 @app.get("/api/v1/cluster/status")
-async def get_cluster_status(request: Request) -> dict[str, str]:
+async def get_cluster_status() -> dict[str, str]:
     """Return whether the backend can reach the Kubernetes API server."""
     try:
         v1 = client.CoreV1Api()

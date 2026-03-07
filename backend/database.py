@@ -17,8 +17,6 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 class Base(DeclarativeBase):
     """SQLAlchemy declarative base shared by all ORM models."""
 
-    pass
-
 
 def get_db() -> Generator[Session, None, None]:
     """Yield a database session, closing it when the request completes."""
@@ -31,5 +29,5 @@ def get_db() -> Generator[Session, None, None]:
 
 def init_db() -> None:
     """Create all database tables from SQLAlchemy ORM models."""
-    from backend.models.orm_models import Project, DiagnoseHistory  # noqa: F401
+    from backend.models.orm_models import Project, DiagnoseHistory  # noqa: F401 – imported for side-effect (table registration)
     Base.metadata.create_all(bind=engine)

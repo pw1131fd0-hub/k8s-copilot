@@ -109,7 +109,7 @@ class AIDiagnoser:
             data = json.loads(raw)
             return {
                 "root_cause": data.get("root_cause", ""),
-                "detailed_analysis": data.get("detailed_analysis", "") or "",
+                "detailed_analysis": data.get("detailed_analysis") or None,
                 "remediation": data.get("remediation", ""),
             }
         except json.JSONDecodeError:

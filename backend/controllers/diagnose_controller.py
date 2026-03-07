@@ -27,10 +27,10 @@ async def diagnose_pod(
     try:
         return _svc.diagnose(pod_name=pod_name, namespace=request.namespace, db=db)
     except PodNotFoundError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+        raise HTTPException(status_code=404, detail=str(e)) from e
     except Exception as e:
         logger.error("Diagnosis failed for pod %s: %s", pod_name, e)
-        raise HTTPException(status_code=500, detail="Diagnosis failed. Check server logs for details.")
+        raise HTTPException(status_code=500, detail="Diagnosis failed. Check server logs for details.") from e
 
 
 @router.get("/history", response_model=list[DiagnoseHistoryRecord])
