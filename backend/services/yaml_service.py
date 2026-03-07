@@ -3,6 +3,7 @@ import logging
 import os
 from dataclasses import dataclass
 from typing import Any, Callable, Literal
+from urllib.parse import urlparse
 import httpx
 import yaml
 from deepdiff import DeepDiff
@@ -12,6 +13,24 @@ logger = logging.getLogger(__name__)
 
 # Maximum characters of YAML content sent to the AI engine to keep prompts within token limits.
 _YAML_AI_TRUNCATE_CHARS = 3000
+
+
+def _validate_ai_engine_url(url: str) -> str | None:
+    """Validate and sanitize AI_ENGINE_URL. Returns None if invalid."""
+    if not url:
+        return None
+    try:
+        parsed = urlparse(url)
+        if parsed.scheme not in ("http", "https"):
+            logger.warning("AI_ENGINE_URL has invalid scheme: %s", parsed.scheme)
+            return None
+        if not parsed.netloc:
+            logger.warning("AI_ENGINE_URL has no host")
+            return None
+        return f"{parsed.scheme}://{parsed.netloc}{parsed.path}".rstrip("/")
+    except Exception as e:
+        logger.warning("AI_ENGINE_URL validation failed: %s", e)
+        return None
 
 
 @dataclass(frozen=True)
@@ -88,6 +107,20 @@ ANTI_PATTERN_RULES: list[AntiPatternRule] = [
         ),
         check=lambda c: c.get("image", "").endswith(":latest") or ":" not in c.get("image", ""),
     ),
+    AntiPatternRule(
+        id="ingress-nginx-deprecation",
+        severity="ERROR",
+        message=(
+            "Ingress '{ingress}' uses ingress-nginx which is archived in March 2026."
+            " Migrate to Gateway API or another supported Ingress Controller."
+        ),
+        check=lambda doc: (
+            doc.get("kind") == "Ingress" and (
+                doc.get("metadata", {}).get("annotations", {}).get("kubernetes.io/ingress.class") == "nginx" or
+                doc.get("spec", {}).get("ingressClassName") == "nginx"
+            )
+        ),
+    ),
 ]
 
 
@@ -112,6 +145,16 @@ class YamlService:
             if not doc or not isinstance(doc, dict):
                 continue
 
+            # Check top-level rules (like Ingress deprecation)
+            for rule in ANTI_PATTERN_RULES:
+                if rule.id == "ingress-nginx-deprecation":
+                    if rule.check(doc):
+                        issues.append(YamlIssue(
+                            severity=rule.severity,
+                            rule=rule.id,
+                            message=rule.message.format(ingress=doc.get("metadata", {}).get("name", "unknown")),
+                        ))
+
             kind = doc.get("kind", "")
             spec = doc.get("spec", {})
             containers = []
@@ -130,6 +173,9 @@ class YamlService:
             for container in containers:
                 name = container.get("name", "unknown")
                 for rule in ANTI_PATTERN_RULES:
+                    # Skip top-level rules during container-level check
+                    if rule.id == "ingress-nginx-deprecation":
+                        continue
                     if rule.check(container):
                         issues.append(YamlIssue(
                             severity=rule.severity,
@@ -149,7 +195,7 @@ class YamlService:
 
     def _get_ai_suggestions(self, issues: list[YamlIssue], yaml_content: str) -> str | None:
         """Call AI engine for human-friendly remediation advice on detected issues (best-effort)."""
-        ai_engine_url = os.getenv("AI_ENGINE_URL", "").rstrip("/")
+        ai_engine_url = _validate_ai_engine_url(os.getenv("AI_ENGINE_URL", ""))
         if ai_engine_url:
             return self._get_ai_suggestions_via_http(issues, yaml_content, ai_engine_url)
         return self._get_ai_suggestions_local(issues, yaml_content)

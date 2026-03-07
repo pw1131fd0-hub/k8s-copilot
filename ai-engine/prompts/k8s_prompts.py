@@ -32,6 +32,9 @@ YAML_SCAN_PROMPT_TEMPLATE = """You are a Senior Kubernetes Security and Best-Pra
 The following Kubernetes YAML has been scanned by a static linter. Convert the linter errors into clear, 
 developer-friendly explanations with specific fix instructions.
 
+特別注意：
+如果發現 `ingress-nginx` 的相關警告，請強調該組件已於 2026 年 3 月退役，並強烈建議遷移至 Gateway API。提供具體的 Gateway API (HTTPRoute) 範例作為替代方案。
+
 ## Linter Issues Found
 {issues}
 
