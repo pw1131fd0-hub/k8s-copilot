@@ -85,7 +85,7 @@
         }
         .action-btn:hover { background: #3a3b3c; color: #e4e6eb; }
         .action-btn.liked { color: #e74c3c; }
-        .action-count { font-size: 0.85rem; min-width: 20px; }
+        .action-count { display: none; } /* 隱藏按讚數字 - 自己不需要给自己点赞 */
 
         /* Comments Section */
         .comments-section {
@@ -252,6 +252,61 @@
         }
         .fab:hover { transform: scale(1.1); box-shadow: 0 6px 16px rgba(10, 102, 194, 0.5); }
 
+        /* 心情回顧區塊 */
+        .mood-review {
+            background: #242526; border-radius: 12px; margin-bottom: 16px;
+            padding: 16px; border: 1px solid #3e4042;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        .mood-review-title {
+            font-weight: 700; font-size: 1.1rem; color: #fff; margin-bottom: 14px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .mood-chart {
+            display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
+        }
+        .mood-chart-item {
+            display: flex; flex-direction: column; align-items: center;
+            padding: 10px; background: #3a3b3c; border-radius: 8px; min-width: 70px;
+        }
+        .mood-chart-icon { font-size: 1.5rem; margin-bottom: 4px; }
+        .mood-chart-count {
+            font-size: 1.1rem; font-weight: 700; color: #fff;
+        }
+        .mood-chart-label {
+            font-size: 0.75rem; color: #b0b3b8; margin-top: 2px;
+        }
+        .mood-stats { margin-top: 14px; padding-top: 14px; border-top: 1px solid #3e4042; }
+        .mood-stats-text { font-size: 0.85rem; color: #b0b3b8; }
+
+        /* AI 回覆動畫 */
+        .ai-reply {
+            background: linear-gradient(135deg, #1a472a, #2d5a3d);
+            padding: 10px 14px; border-radius: 8px; margin-top: 10px;
+            border-left: 3px solid #00b894;
+            animation: fadeIn 0.5s ease;
+        }
+        .ai-reply-header {
+            display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
+        }
+        .ai-badge {
+            background: #00b894; color: white; font-size: 0.7rem; font-weight: 700;
+            padding: 2px 8px; border-radius: 4px;
+        }
+        .ai-reply-text { color: #d0d2d6; font-size: 0.9rem; line-height: 1.5; }
+        .ai-typing {
+            display: flex; gap: 4px; padding: 10px;
+        }
+        .ai-typing span {
+            width: 8px; height: 8px; background: #00b894; border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out;
+        }
+        .ai-typing span:nth-child(1) { animation-delay: 0s; }
+        .ai-typing span:nth-child(2) { animation-delay: 0.2s; }
+        .ai-typing span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+
         @media (max-width: 640px) {
             .container { padding: 12px 8px; }
             .header { padding: 12px 14px; }
@@ -265,6 +320,13 @@
         <img src="logo.png" style="height:32px;vertical-align:middle;margin-right:8px;"> <span style="vertical-align:middle;">ClawBook</span>
     </div>
     <div class="container">
+        <!-- 心情回顧區塊 -->
+        <div class="mood-review" id="moodReview">
+            <div class="mood-review-title">📊 本週心情回顧</div>
+            <div class="mood-chart" id="moodChart"></div>
+            <div class="mood-stats" id="moodStats"></div>
+        </div>
+        
         <div id="feed"></div>
         <div id="detail" class="detail-view"></div>
     </div>
@@ -665,6 +727,185 @@
         });
         
         loadFeed();
+    </script>
+    
+    <!-- 心情回顧與 AI 回覆功能 -->
+    <script>
+        // 心情回顧功能
+        function loadMoodReview() {
+            const posts = initData();
+            const now = new Date();
+            const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            
+            // 統計本週心情
+            const moodCounts = {};
+            const moodIcons = {
+                '😊': '😊', '😐': '😐', '😔': '😔', '😤': '😤', '🥰': '🥰', '😴': '😴', '🤔': '🤔',
+                '好心情': '😊', '一般': '😐', '心情不好': '😔', '生气': '😤', '幸福': '🥰', '疲倦': '😴', '思考中': '🤔'
+            };
+            const moodLabels = {
+                '😊': '好心情', '😐': '一般', '😔': '心情不好', '😤': '生氣', '🥰': '幸福', '😴': '疲倦', '🤔': '思考中'
+            };
+            
+            posts.forEach(post => {
+                // 嘗試從心情文字中提取 emoji
+                let moodEmoji = '💭';
+                for (const [key, icon] of Object.entries(moodIcons)) {
+                    if (post.mood && post.mood.includes(key)) {
+                        moodEmoji = icon;
+                        break;
+                    }
+                }
+                moodCounts[moodEmoji] = (moodCounts[moodEmoji] || 0) + 1;
+            });
+            
+            // 渲染圖表
+            const chart = document.getElementById('moodChart');
+            const stats = document.getElementById('moodStats');
+            
+            if (Object.keys(moodCounts).length === 0) {
+                chart.innerHTML = '<div style="color:#b0b3b8;font-size:0.9rem;">尚無心情記錄</div>';
+                stats.innerHTML = '';
+                return;
+            }
+            
+            // 按數量排序
+            const sortedMoods = Object.entries(moodCounts)
+                .sort((a, b) => b[1] - a[1]);
+            
+            let chartHtml = '';
+            sortedMoods.forEach(([emoji, count]) => {
+                const label = moodLabels[emoji] || emoji;
+                chartHtml += `<div class="mood-chart-item">
+                    <span class="mood-chart-icon">${emoji}</span>
+                    <span class="mood-chart-count">${count}</span>
+                    <span class="mood-chart-label">${label}</span>
+                </div>`;
+            });
+            chart.innerHTML = chartHtml;
+            
+            const total = posts.length;
+            const topMood = sortedMoods[0];
+            stats.innerHTML = `<div class="mood-stats-text">
+                共 ${total} 篇貼文，最常記錄的心情是 ${topMood[0]} ${moodLabels[topMood[0]] || ''}
+            </div>`;
+        }
+        
+        // AI 自動回覆功能
+        const aiReplies = {
+            // 鼓勵型
+            encourage: [
+                '🌟 看到你的分享真好！繼續保持這樣的心態，你一定能做得更好！',
+                '💪 加油！每一天都是新的開始，相信自己！',
+                '✨ 你的努力一定會被看見的，繼續加油！',
+                '🎉 太棒了！為你感到驕傲！',
+                '🌈 好的開始是成功的一半，繼續維持！'
+            ],
+            // 共鳴型
+           共鸣: [
+                '🤝 我懂你的感受，這很正常。',
+                '💭 你說得很有道理，我也有類似的經驗。',
+                '❤️ 完全理解你的心情。',
+                '📝 謝謝你的分享，這些想法很有價值。',
+                '💡 你讓我想到了一些事情，謝謝！'
+            ],
+            // 安慰型
+            comfort: [
+                '🤗 沒關係，一切都會好起來的。',
+                '💙 別擔心，我在這裡支持你。',
+                '🌻 每個人都會有低潮期，過了就好了。',
+                '☀️ 明天會是更好的一天！',
+                '💪 困難只是暫時的，你一定可以克服！'
+            ],
+            // 好奇型
+            curious: [
+                '🔍 後來呢？好想聽更多！',
+                '🤔 這件事後來怎麼樣了？',
+                '💬 可以多聊聊這個話題嗎？',
+                '👀 真的嗎？太有趣了！',
+                '🎯 後續有什麼計畫嗎？'
+            ]
+        };
+        
+        function generateAIReply(commentText) {
+            // 根據留言關鍵詞選擇回覆類型
+            const lowerText = commentText.toLowerCase();
+            let type = 'encourage'; // 默認鼓勵型
+            
+            if (lowerText.includes('加油') || lowerText.includes('棒') || lowerText.includes('厲害') || lowerText.includes('讚')) {
+                type = 'encourage';
+            } else if (lowerText.includes('懂') || lowerText.includes('理解') || lowerText.includes('同感') || lowerText.includes('一樣')) {
+                type = '共鸣';
+            } else if (lowerText.includes('難過') || lowerText.includes('不好') || lowerText.includes('累') || lowerText.includes('失望')) {
+                type = 'comfort';
+            } else if (lowerText.includes('?') || lowerText.includes('？') || lowerText.includes('後來') || lowerText.includes('怎麼')) {
+                type = 'curious';
+            }
+            
+            // 隨機選擇一條回覆
+            const replies = aiReplies[type];
+            return replies[Math.floor(Math.random() * replies.length)];
+        }
+        
+        function showAIReply(postId, replyText) {
+            const commentSection = document.getElementById(`comment-section-${postId}`);
+            if (!commentSection) return;
+            
+            // 顯示 AI 輸入中動畫
+            const aiTypingHtml = `<div class="ai-typing" id="ai-typing-${postId}">
+                <span></span><span></span><span></span>
+            </div>`;
+            commentSection.insertAdjacentHTML('beforeend', aiTypingHtml);
+            
+            // 模擬 AI 生成回覆延遲
+            setTimeout(() => {
+                // 移除輸入動畫
+                const typingEl = document.getElementById(`ai-typing-${postId}`);
+                if (typingEl) typingEl.remove();
+                
+                // 顯示 AI 回覆
+                const aiReplyHtml = `<div class="ai-reply">
+                    <div class="ai-reply-header">
+                        <span class="ai-badge">AI 小幫手</span>
+                        <span style="color:#b0b3b8;font-size:0.8rem;">刚刚</span>
+                    </div>
+                    <div class="ai-reply-text">${replyText}</div>
+                </div>`;
+                commentSection.insertAdjacentHTML('beforeend', aiReplyHtml);
+            }, 1500 + Math.random() * 1000); // 1.5-2.5 秒延遲
+        }
+        
+        // 修改 addComment 函數，加入 AI 回覆
+        const originalAddComment = addComment;
+        addComment = function(postId) {
+            const input = document.getElementById(`comment-input-${postId}`);
+            const text = input.value.trim();
+            if (!text) return;
+            
+            const posts = initData();
+            const post = posts.find(p => p.id == postId);
+            if (post) {
+                // 新增用戶留言
+                post.comments.push({
+                    author: '我',
+                    text: text,
+                    time: '刚刚'
+                });
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
+                
+                // 重新渲染以顯示新留言
+                loadFeed();
+                
+                // AI 自動回覆
+                setTimeout(() => {
+                    const aiReply = generateAIReply(text);
+                    showAIReply(postId, aiReply);
+                }, 500);
+            }
+        };
+        
+        // 頁面載入時初始化心情回顧
+        loadMoodReview();
     </script>
 </body>
 </html>
