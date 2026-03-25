@@ -1,0 +1,123 @@
+version: "3.9"
+
+services:
+  # ─── AI Engine Microservice ────────────────────────────────────────────────
+  ai-engine:
+    build:
+      context: .
+      dockerfile: ai_engine/Dockerfile
+    image: lobster-k8s-copilot/ai-engine:latest
+    container_name: lobster-ai-engine
+    restart: unless-stopped
+    environment:
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-1.5-pro}
+    ports:
+      - "8001:8001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    networks:
+      - lobster-net
+
+  # ─── Backend (FastAPI) ────────────────────────────────────────────────────
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    image: lobster-k8s-copilot/backend:latest
+    container_name: lobster-backend
+    restart: unless-stopped
+    depends_on:
+      ai-engine:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-sqlite:///./lobster.db}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000}
+      AI_ENGINE_URL: http://ai-engine:8001
+    volumes:
+      # Persist SQLite database
+      - lobster-db:/app/data
+      # Mount kubeconfig for local K8s access (optional)
+      - ${KUBECONFIG:-~/.kube/config}:/root/.kube/config:ro
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    networks:
+      - lobster-net
+
+  # ─── Frontend (React + nginx) ─────────────────────────────────────────────
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    image: lobster-k8s-copilot/frontend:latest
+    container_name: lobster-frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      REACT_APP_API_URL: ${REACT_APP_API_URL:-http://localhost:8000/api/v1}
+    ports:
+      - "3000:80"
+    networks:
+      - lobster-net
+
+  # ─── Smoke Test (optional, run with --profile smoke-test) ───────────────
+  smoke-test:
+    image: curlimages/curl:latest
+    container_name: lobster-smoke-test
+    depends_on:
+      backend:
+        condition: service_healthy
+      ai-engine:
+        condition: service_healthy
+      frontend:
+        condition: service_started
+    environment:
+      BACKEND_URL: http://backend:8000
+      AI_ENGINE_URL: http://ai-engine:8001
+      FRONTEND_URL: http://frontend:80
+    volumes:
+      - ./scripts/smoke_test.sh:/smoke_test.sh:ro
+    entrypoint: ["/bin/sh", "/smoke_test.sh"]
+    restart: "no"
+    profiles:
+      - smoke-test
+    networks:
+      - lobster-net
+
+  # ─── Ollama (Optional Local LLM) ─────────────────────────────────────────
+  ollama:
+    image: ollama/ollama:latest
+    container_name: lobster-ollama
+    restart: unless-stopped
+    volumes:
+      - ollama-data:/root/.ollama
+    ports:
+      - "11434:11434"
+    profiles:
+      - with-ollama
+    networks:
+      - lobster-net
+
+volumes:
+  lobster-db:
+  ollama-data:
+
+networks:
+  lobster-net:
+    driver: bridge
