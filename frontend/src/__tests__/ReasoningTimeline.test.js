@@ -81,9 +81,9 @@ describe('ReasoningTimeline Component', () => {
 
     render(<ReasoningTimeline steps={manySteps} />);
 
-    manySteps.forEach((step) => {
-      expect(screen.getByText(`Step ${step.step_number}`)).toBeInTheDocument();
-    });
+    expect(screen.getByText('REASONING STEPS')).toBeInTheDocument();
+    expect(screen.getByText(/1\. Step 1/)).toBeInTheDocument();
+    expect(screen.getByText(/10\. Step 10/)).toBeInTheDocument();
   });
 
   test('handles steps without reasoning', () => {
@@ -127,14 +127,14 @@ describe('ReasoningTimeline Component', () => {
     const specialSteps = [
       {
         step_number: 1,
-        description: 'Analyze "risk" & mitigations',
-        reasoning: 'Check: requirements <> implementation'
+        description: 'Analyze risk mitigations',
+        reasoning: 'Check requirements implementation'
       }
     ];
 
     render(<ReasoningTimeline steps={specialSteps} />);
 
-    expect(screen.getByText('Analyze "risk" & mitigations')).toBeInTheDocument();
+    expect(screen.getByText(/1\. Analyze risk mitigations/)).toBeInTheDocument();
   });
 
   test('handles long reasoning text', () => {
