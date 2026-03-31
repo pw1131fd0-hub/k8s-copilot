@@ -372,7 +372,7 @@ def get_mood_summary(
 
 @router.get("/posts/export")
 def export_posts(
-    format: Annotated[str, Query(regex="^(json|csv|markdown)$")] = "json",
+    format: Annotated[str, Query(pattern="^(json|csv|markdown)$")] = "json",
     start_date: Annotated[str, Query()] = None,
     end_date: Annotated[str, Query()] = None,
     db: Annotated[Session, Depends(get_db)] = None,
