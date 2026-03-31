@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import PostCard from '../components/PostCard';
 import PostComposer from '../components/PostComposer';
+import ExportModal from '../components/ExportModal';
 import { fetchPosts } from '../utils/api';
 
 export default function Feed() {
@@ -10,6 +11,7 @@ export default function Feed() {
   const [total, setTotal] = useState(0);
   const [offset, setOffset] = useState(0);
   const [selectedMoodFilter, setSelectedMoodFilter] = useState(null);
+  const [showExportModal, setShowExportModal] = useState(false);
 
   useEffect(() => {
     loadPosts();
@@ -59,31 +61,42 @@ export default function Feed() {
         <PostComposer onPostCreated={handlePostCreated} />
       </div>
 
-      {/* Mood Filters */}
-      <div className="border-b border-slate-800 dark:border-slate-700 px-4 py-3 flex gap-2 overflow-x-auto">
-        <button
-          onClick={() => setSelectedMoodFilter(null)}
-          className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${
-            selectedMoodFilter === null
-              ? 'bg-blue-600 text-white'
-              : 'bg-slate-800 dark:bg-slate-800 text-slate-300 dark:text-slate-300 hover:bg-slate-700'
-          }`}
-        >
-          All
-        </button>
-        {MOOD_FILTERS.map((mood) => (
+      {/* Mood Filters and Export */}
+      <div className="border-b border-slate-800 dark:border-slate-700 px-4 py-3">
+        <div className="flex gap-2 overflow-x-auto justify-between items-center">
+          <div className="flex gap-2 overflow-x-auto">
+            <button
+              onClick={() => setSelectedMoodFilter(null)}
+              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${
+                selectedMoodFilter === null
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-slate-800 dark:bg-slate-800 text-slate-300 dark:text-slate-300 hover:bg-slate-700'
+              }`}
+            >
+              All
+            </button>
+            {MOOD_FILTERS.map((mood) => (
+              <button
+                key={mood.emoji}
+                onClick={() => setSelectedMoodFilter(mood.emoji)}
+                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${
+                  selectedMoodFilter === mood.emoji
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-slate-800 dark:bg-slate-800 text-slate-300 dark:text-slate-300 hover:bg-slate-700'
+                }`}
+              >
+                {mood.emoji} {mood.label}
+              </button>
+            ))}
+          </div>
           <button
-            key={mood.emoji}
-            onClick={() => setSelectedMoodFilter(mood.emoji)}
-            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${
-              selectedMoodFilter === mood.emoji
-                ? 'bg-blue-600 text-white'
-                : 'bg-slate-800 dark:bg-slate-800 text-slate-300 dark:text-slate-300 hover:bg-slate-700'
-            }`}
+            onClick={() => setShowExportModal(true)}
+            className="px-3 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap bg-slate-800 dark:bg-slate-800 text-slate-300 dark:text-slate-300 hover:bg-slate-700"
+            title="Export journal entries"
           >
-            {mood.emoji} {mood.label}
+            📥 Export
           </button>
-        ))}
+        </div>
       </div>
 
       {/* Posts Feed */}
@@ -129,6 +142,12 @@ export default function Feed() {
           </button>
         </div>
       )}
+
+      {/* Export Modal */}
+      <ExportModal
+        isOpen={showExportModal}
+        onClose={() => setShowExportModal(false)}
+      />
     </main>
   );
 }

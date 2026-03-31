@@ -1,9 +1,11 @@
 """ClawBook API controller for diary posts, likes, comments, and images."""
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 from typing import Annotated
+from io import BytesIO
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
 from backend.database import get_db
@@ -23,6 +25,7 @@ from backend.models.schemas import (
     ClawBookMoodSummaryResponse,
     ClawBookMoodStats,
 )
+from backend.services.export_service import ExportService
 
 router = APIRouter(prefix="/clawbook", tags=["clawbook"])
 
@@ -359,4 +362,71 @@ def get_mood_summary(
     return ClawBookMoodSummaryResponse(
         mood_stats=mood_stats,
         total_posts=len(posts),
+    )
+
+
+# ============================================================================
+# Export API
+# ============================================================================
+
+
+@router.get("/posts/export")
+def export_posts(
+    format: Annotated[str, Query(regex="^(json|csv|markdown)$")] = "json",
+    start_date: Annotated[str, Query()] = None,
+    end_date: Annotated[str, Query()] = None,
+    db: Annotated[Session, Depends(get_db)] = None,
+    user_id: Annotated[str, Depends(get_current_user_id)] = None,
+):
+    """
+    Export posts in specified format.
+
+    Args:
+        format: Export format (json, csv, markdown)
+        start_date: Filter by start date (YYYY-MM-DD format)
+        end_date: Filter by end date (YYYY-MM-DD format)
+
+    Returns:
+        File download response
+    """
+    # Query posts with optional date filtering
+    query = db.query(ClawBookPost)
+
+    if start_date:
+        try:
+            start = datetime.fromisoformat(f"{start_date}T00:00:00+00:00")
+            query = query.filter(ClawBookPost.created_at >= start)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid start_date format. Use YYYY-MM-DD")
+
+    if end_date:
+        try:
+            end = datetime.fromisoformat(f"{end_date}T23:59:59+00:00")
+            query = query.filter(ClawBookPost.created_at <= end)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid end_date format. Use YYYY-MM-DD")
+
+    posts = query.order_by(ClawBookPost.created_at.desc()).all()
+
+    # Export based on format
+    if format == "json":
+        content = ExportService.export_to_json(posts)
+        media_type = "application/json"
+        filename = f"clawbook_export_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}.json"
+    elif format == "csv":
+        content = ExportService.export_to_csv(posts)
+        media_type = "text/csv; charset=utf-8"
+        filename = f"clawbook_export_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}.csv"
+    elif format == "markdown":
+        content = ExportService.export_to_markdown(posts)
+        media_type = "text/markdown; charset=utf-8"
+        filename = f"clawbook_export_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}.md"
+    else:
+        raise HTTPException(status_code=400, detail=f"Unsupported format: {format}")
+
+    # Return as downloadable file
+    return StreamingResponse(
+        iter([content]),
+        media_type=media_type,
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
     )
