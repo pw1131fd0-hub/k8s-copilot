@@ -2358,6 +2358,7 @@ Permissions: a
 
 【現有文件結構（主要）】
 /home/crawd_user/project/clawbook/copilot-instructions.md
+/home/crawd_user/project/clawbook/RALPH_LOOP_ITERATION_2_SUMMARY.md
 /home/crawd_user/project/clawbook/VERIFICATION_REPORT.md
 /home/crawd_user/project/clawbook/RALPH_LOOP_ITERATION_1_SUMMARY.md
 /home/crawd_user/project/clawbook/ITERATION_11_SUMMARY.md
@@ -2376,7 +2377,6 @@ Permissions: a
 /home/crawd_user/project/clawbook/frontend/src/__tests__/Trends.test.js
 /home/crawd_user/project/clawbook/frontend/src/__tests__/OfflineIndicator.test.js
 /home/crawd_user/project/clawbook/frontend/src/__tests__/useK8sData.test.js
-/home/crawd_user/project/clawbook/frontend/src/__tests__/CommentSection.test.js
 
 【老闆的產品願景與需求】
 這是一個專為 AI 助理設計的「心聲日記」系統，讓 AI 可以記錄並展示每日的思考、心情與成長軌跡。系統採用 Facebook 風格的深色模式 UI，支援多設備訪問，旨在讓人類與 AI 之間建立更深層的理解與信任。
@@ -2386,163 +2386,6 @@ Permissions: a
 目標使用者為使用 AI 助理的團隊或個人，希望透過閱讀 AI 的「內心獨白」來理解 AI 的決策邏輯、價值觀與成長過程。這不僅是技術展示，更是人機信任建設的工具。系統支援未來擴充功能，如語音輸入、AI 自動摘要、多語系支援等。
 
 請務必對齊此期望。
-
-【上次巡檢狀態】
-{
-  "project": "ClawBook",
-  "path": "/home/crawd_user/project/clawbook",
-  "iteration": 14,
-  "phase": "dev_v1.4",
-  "stage": "v1.4_development",
-  "completeness": 40,
-  "quality_score": 85,
-  "last_updated": "2026-04-01T12:00:00Z",
-  "summary": "🚀 v1.4 Development IN PROGRESS - AI Decision Path Visualization backend COMPLETE. Backend: 3 API endpoints implemented + 4 new tests (all 29 tests passing, 100% success rate). Frontend components pending. Expected completion: 2 iterations.",
-  "v1_4_development": {
-    "feature": "AI Decision Path Visualization",
-    "status": "🚀 IN PROGRESS",
-    "market_justification": "Addresses researchers & AI ethicists segment (10% market). Enables transparency into AI decision-making processes.",
-    "estimated_total_duration": "2.5 weeks",
-    "current_phase": "Phase 1: Database & API (Complete) / Phase 2-4: Frontend & Testing (Pending)",
-    "backend_implementation": {
-      "status": "✅ COMPLETE",
-      "components": [
-        "✅ AIDecisionPath ORM Model (with JSON storage for reasoning steps, candidates, final decision, key factors)",
-        "✅ Pydantic Schemas (ReasoningStep, DecisionCandidate, FinalDecision, KeyFactor, AIDecisionPathCreate/Response/Summary)",
-        "✅ 3 API Endpoints: GET /posts/{post_id}/decision-path, POST /posts/{post_id}/decision-path, GET /decision-paths/history",
-        "✅ Database Integration (auto-created table with foreign key, indexes)",
-        "✅ 4 Comprehensive Tests (all passing: test_create_decision_path, test_get_decision_path, test_get_decision_path_not_found, test_get_decision_paths_history)"
-      ],
-      "test_results": {
-        "total_tests": 29,
-        "passing": 29,
-        "failing": 0,
-        "pass_rate": "100%"
-      },
-      "quality_metrics": {
-        "code_quality": 88,
-        "test_coverage": 82,
-        "api_completeness": 100
-      }
-    },
-    "frontend_implementation": {
-      "status": "⏳ PENDING",
-      "components_todo": [
-        "DecisionPathViewer component (main wrapper)",
-        "ReasoningTimeline component (visual timeline of reasoning steps)",
-        "CandidateComparison component (table comparing alternative options)",
-        "ConfidenceIndicator component (progress bar showing confidence score)",
-        "KeyFactorsChart component (Recharts bar chart for factor weights)",
-        "DecisionPathsPage (new page route /decision-paths)",
-        "Integration in PostDetail.jsx",
-        "Styling with Tailwind dark mode"
-      ],
-      "estimated_duration": "1.5 weeks"
-    },
-    "testing_plan": {
-      "backend_tests": "✅ COMPLETE (4/4 tests passing)",
-      "frontend_tests": "⏳ PENDING (planned for phase 3)",
-      "integration_tests": "⏳ PENDING"
-    },
-    "quality_gates_target": {
-      "dev_stage": {
-        "required": 90,
-        "current": 88,
-        "status": "APPROACHING GATE"
-      },
-      "test_stage": {
-        "required": 95,
-        "current": 85,
-        "status": "NEEDS FRONTEND TESTS"
-      },
-      "overall_quality": {
-        "required": 95,
-        "current": 85,
-        "status": "ON TRACK (expected 95+ after frontend completion)"
-      }
-    }
-  },
-  "v1_3_status": {
-    "version": "1.3.0",
-    "status": "✅ PRODUCTION READY",
-    "quality_score": 95,
-    "test_pass_rate": "99.8% (517 tests)",
-    "features_complete": [
-      "✅ Voice Input (Web Audio API + Web Speech API)",
-      "✅ Emotion Trend Charts (30/60/90 day visualization)",
-      "✅ Trends Page (/trends route)",
-      "✅ Complete dark mode theme"
-    ]
-  },
-  "milestones": {
-    "v1.0": "✅ COMPLETE - Core diary system with mood tracking, posts, comments, likes",
-    "v1.1": "✅ COMPLETE - Testing and quality improvements",
-    "v1.2": "✅ COMPLETE - Export, Slack integration, PWA, deep dark mode",
-    "v1.3": "✅ COMPLETE - Voice input, emotion trends",
-    "v1.4": "🚀 IN PROGRESS (Iteration 14/Max 2) - AI Decision Path Visualization"
-  },
-  "next_actions": [
-    "✅ Complete backend implementation (100%)",
-    "⏳ Implement frontend React components (Phase 2-3)",
-    "⏳ Add frontend tests (Phase 3)",
-    "⏳ Performance optimization",
-    "⏳ Final quality verification",
-    "⏳ Commit and document v1.4 features"
-  ],
-  "continuous_improvement_cycle": {
-    "enabled": true,
-    "current_cycle": "v1.4 Feature Development",
-    "market_analysis": "✅ COMPLETE (identifies v1.4 candidates based on user segments)",
-    "v1_4_candidates": [
-      "AI Decision Path Visualization (⭐⭐⭐ impact, 2.5 weeks) - SELECTED & IN PROGRESS",
-      "Multi-user Support (⭐⭐⭐⭐ impact, 3-4 weeks) - Planned for v1.5",
-      "Multi-language Support (⭐⭐⭐ impact, 2-3 weeks) - Planned for v1.5",
-      "Auto-summary Generation (⭐⭐ impact, 2 weeks) - Planned for v1.5"
-    ]
-  },
-  "iteration_14_plan": {
-    "objective": "Develop v1.4 AI Decision Path Visualization feature (backend + frontend)",
-    "duration": "Max 2 iterations",
-    "iteration_1_target": "✅ Backend complete, design spec complete, frontend started",
-    "iteration_2_target": "⏳ Frontend complete, all tests passing, quality >= 95"
-  },
-  "quality_gates": {
-    "prd": {
-      "required": 85,
-      "achieved": 92,
-      "status": "✅ PASS"
-    },
-    "sa_sd": {
-      "required": 85,
-      "achieved": 90,
-      "status": "✅ PASS"
-    },
-    "dev": {
-      "required": 90,
-      "achieved": 88,
-      "status": "🟡 IN PROGRESS (approaching gate)"
-    },
-    "test": {
-      "required": 95,
-      "achieved": 85,
-      "status": "🟡 IN PROGRESS (needs frontend tests)"
-    },
-    "security": {
-      "required": 95,
-      "achieved": 95,
-      "status": "✅ PASS (OWASP compliant)"
-    }
-  },
-  "recommendations": [
-    "Backend implementation is solid and well-tested",
-    "Proceed with frontend implementation according to Phase 2 plan",
-    "Focus on React component quality and dark mode consistency",
-    "Ensure comprehensive test coverage for frontend components",
-    "Target quality score 95+ for final release"
-  ]
-}
-
-請根據上次狀態和本次發現，決定是繼續當前階段深化，還是推進到下一階段。
 
 你是這個專案的全權負責工程師。執行「品質驅動」的開發模式：分數達標才往前，可回溯低質量。
 
