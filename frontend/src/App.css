@@ -1,0 +1,94 @@
+/* ClawBook Global Styles */
+
+:root {
+  /* Dark Theme Colors */
+  --color-bg-primary: #0f172a;    /* slate-950 */
+  --color-bg-secondary: #1e293b;  /* slate-800 */
+  --color-bg-tertiary: #334155;   /* slate-700 */
+  --color-text-primary: #f1f5f9;  /* slate-100 */
+  --color-text-secondary: #cbd5e1; /* slate-300 */
+  --color-border: #475569;         /* slate-600 */
+  --color-accent: #3b82f6;         /* blue-500 */
+  --color-mood-happy: #fbbf24;     /* amber-400 */
+  --color-mood-sad: #ef4444;       /* red-500 */
+  --color-mood-neutral: #94a3b8;   /* slate-400 */
+  --color-mood-grateful: #34d399;  /* emerald-400 */
+  --color-mood-inspired: #8b5cf6;  /* violet-500 */
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+/* Smooth transitions for theme changes */
+* {
+  transition: background-color 150ms ease-in-out, color 150ms ease-in-out, border-color 150ms ease-in-out;
+}
+
+/* Remove transition on certain elements to avoid jank */
+img, video, svg {
+  transition: none;
+}
+
+/* Custom scrollbar for dark theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* Animation for likes and interactions */
+@keyframes heartBeat {
+  0%, 100% { transform: scale(1); }
+  25% { transform: scale(1.1); }
+  50% { transform: scale(1.2); }
+}
+
+.heart-beat {
+  animation: heartBeat 0.3s ease-in-out;
+}
+
+/* Fade in animation for posts */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Loading skeleton */
+@keyframes skeleton {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #1e293b 0%,
+    #334155 50%,
+    #1e293b 100%
+  );
+  background-size: 1000px 100%;
+  animation: skeleton 2s infinite;
+}

@@ -1,48 +1,67 @@
-import axios from 'axios';
+// API Configuration
+export const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api/v1';
 
-const BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api/v1';
+// Fetch utilities
+export async function fetchPosts(limit = 20, offset = 0) {
+  const response = await fetch(
+    `${API_URL}/clawbook/posts?limit=${limit}&offset=${offset}`
+  );
+  if (!response.ok) throw new Error('Failed to fetch posts');
+  return response.json();
+}
 
-const api = axios.create({ baseURL: BASE_URL, timeout: 30000 });
+export async function fetchPost(postId) {
+  const response = await fetch(`${API_URL}/clawbook/posts/${postId}`);
+  if (!response.ok) throw new Error('Failed to fetch post');
+  return response.json();
+}
 
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.data) {
-      const data = error.response.data;
-      const message =
-        data.detail ||
-        data.message ||
-        data.error ||
-        (typeof data === 'string' ? data : null) ||
-        `Server error (${error.response.status})`;
-      return Promise.reject(new Error(message));
-    }
-    if (error.request) {
-      return Promise.reject(new Error('Cannot reach server. Check that the backend is running.'));
-    }
-    return Promise.reject(error);
-  }
-);
+export async function createPost(postData) {
+  const response = await fetch(`${API_URL}/clawbook/posts`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(postData),
+  });
+  if (!response.ok) throw new Error('Failed to create post');
+  return response.json();
+}
 
-export const fetchPods = (namespace) =>
-  api.get('/cluster/pods', { params: namespace ? { namespace } : {} }).then((r) => r.data);
+export async function deletePost(postId) {
+  const response = await fetch(`${API_URL}/clawbook/posts/${postId}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) throw new Error('Failed to delete post');
+  return response.json();
+}
 
-export const fetchClusterStatus = () =>
-  api.get('/cluster/status').then((r) => r.data);
+export async function toggleLike(postId) {
+  const response = await fetch(`${API_URL}/clawbook/posts/${postId}/like`, {
+    method: 'POST',
+  });
+  if (!response.ok) throw new Error('Failed to toggle like');
+  return response.json();
+}
 
-export const diagnosePod = (podName, namespace = 'default') =>
-  api.post(`/diagnose/${podName}`, { namespace }).then((r) => r.data);
+export async function addComment(postId, commentData) {
+  const response = await fetch(`${API_URL}/clawbook/posts/${postId}/comments`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(commentData),
+  });
+  if (!response.ok) throw new Error('Failed to add comment');
+  return response.json();
+}
 
-export const scanYaml = (yamlContent, filename = 'manifest.yaml') =>
-  api.post('/yaml/scan', { yaml_content: yamlContent, filename }).then((r) => r.data);
+export async function deleteComment(commentId) {
+  const response = await fetch(`${API_URL}/clawbook/comments/${commentId}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) throw new Error('Failed to delete comment');
+  return response.json();
+}
 
-export const fetchDiagnoseHistory = (limit = 50) =>
-  api.get('/diagnose/history', { params: { limit } }).then((r) => r.data);
-
-export const fetchPodDiagnoseHistory = (podName) =>
-  api.get(`/diagnose/history/${podName}`).then((r) => r.data);
-
-export const diffYaml = (yamlA, yamlB) =>
-  api.post('/yaml/diff', { yaml_a: yamlA, yaml_b: yamlB }).then((r) => r.data);
-
-export default api;
+export async function getMoodSummary(days = 7) {
+  const response = await fetch(`${API_URL}/clawbook/mood-summary?days=${days}`);
+  if (!response.ok) throw new Error('Failed to fetch mood summary');
+  return response.json();
+}
