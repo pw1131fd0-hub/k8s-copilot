@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1774971516588" clover="3.2.0">
-  <project timestamp="1774971516588" name="All files">
-    <metrics statements="541" coveredstatements="276" conditionals="463" coveredconditionals="298" methods="166" coveredmethods="91" elements="1170" coveredelements="665" complexity="0" loc="541" ncloc="541" packages="5" files="20" classes="20"/>
+<coverage generated="1774971640851" clover="3.2.0">
+  <project timestamp="1774971640851" name="All files">
+    <metrics statements="541" coveredstatements="314" conditionals="463" coveredconditionals="310" methods="166" coveredmethods="100" elements="1170" coveredelements="724" complexity="0" loc="541" ncloc="541" packages="5" files="20" classes="20"/>
     <package name="src">
       <metrics statements="13" coveredstatements="9" conditionals="8" coveredconditionals="4" methods="5" coveredmethods="3"/>
       <file name="App.js" path="/home/crawd_user/project/clawbook/frontend/src/App.js">
@@ -25,7 +25,7 @@
       </file>
     </package>
     <package name="src.components">
-      <metrics statements="393" coveredstatements="207" conditionals="352" coveredconditionals="235" methods="117" coveredmethods="67"/>
+      <metrics statements="393" coveredstatements="245" conditionals="352" coveredconditionals="247" methods="117" coveredmethods="76"/>
       <file name="CommentSection.js" path="/home/crawd_user/project/clawbook/frontend/src/components/CommentSection.js">
         <metrics statements="36" coveredstatements="0" conditionals="16" coveredconditionals="0" methods="9" coveredmethods="0"/>
         <line num="5" count="0" type="stmt"/>
@@ -220,35 +220,35 @@
         <line num="124" count="0" type="stmt"/>
       </file>
       <file name="PostComposer.js" path="/home/crawd_user/project/clawbook/frontend/src/components/PostComposer.js">
-        <metrics statements="28" coveredstatements="0" conditionals="10" coveredconditionals="0" methods="8" coveredmethods="0"/>
-        <line num="5" count="0" type="stmt"/>
-        <line num="19" count="0" type="stmt"/>
-        <line num="20" count="0" type="stmt"/>
-        <line num="21" count="0" type="stmt"/>
-        <line num="22" count="0" type="stmt"/>
-        <line num="24" count="0" type="stmt"/>
-        <line num="25" count="0" type="stmt"/>
-        <line num="26" count="0" type="cond" truecount="0" falsecount="2"/>
-        <line num="29" count="0" type="stmt"/>
-        <line num="33" count="0" type="stmt"/>
-        <line num="34" count="0" type="stmt"/>
-        <line num="35" count="0" type="cond" truecount="0" falsecount="2"/>
-        <line num="37" count="0" type="stmt"/>
-        <line num="38" count="0" type="stmt"/>
-        <line num="39" count="0" type="stmt"/>
-        <line num="45" count="0" type="stmt"/>
-        <line num="46" count="0" type="stmt"/>
-        <line num="47" count="0" type="stmt"/>
-        <line num="48" count="0" type="stmt"/>
-        <line num="50" count="0" type="stmt"/>
-        <line num="51" count="0" type="stmt"/>
-        <line num="53" count="0" type="stmt"/>
-        <line num="57" count="0" type="stmt"/>
-        <line num="64" count="0" type="stmt"/>
-        <line num="73" count="0" type="stmt"/>
-        <line num="77" count="0" type="stmt"/>
-        <line num="78" count="0" type="stmt"/>
-        <line num="94" count="0" type="stmt"/>
+        <metrics statements="28" coveredstatements="28" conditionals="10" coveredconditionals="10" methods="8" coveredmethods="8"/>
+        <line num="5" count="1" type="stmt"/>
+        <line num="19" count="182" type="stmt"/>
+        <line num="20" count="182" type="stmt"/>
+        <line num="21" count="182" type="stmt"/>
+        <line num="22" count="182" type="stmt"/>
+        <line num="24" count="182" type="stmt"/>
+        <line num="25" count="2" type="stmt"/>
+        <line num="26" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="29" count="2" type="stmt"/>
+        <line num="33" count="182" type="stmt"/>
+        <line num="34" count="9" type="stmt"/>
+        <line num="35" count="9" type="cond" truecount="2" falsecount="0"/>
+        <line num="37" count="8" type="stmt"/>
+        <line num="38" count="8" type="stmt"/>
+        <line num="39" count="8" type="stmt"/>
+        <line num="45" count="5" type="stmt"/>
+        <line num="46" count="5" type="stmt"/>
+        <line num="47" count="5" type="stmt"/>
+        <line num="48" count="5" type="stmt"/>
+        <line num="50" count="1" type="stmt"/>
+        <line num="51" count="1" type="stmt"/>
+        <line num="53" count="6" type="stmt"/>
+        <line num="57" count="182" type="stmt"/>
+        <line num="64" count="4" type="stmt"/>
+        <line num="73" count="30" type="stmt"/>
+        <line num="77" count="2" type="stmt"/>
+        <line num="78" count="2" type="stmt"/>
+        <line num="94" count="143" type="stmt"/>
       </file>
       <file name="Sidebar.js" path="/home/crawd_user/project/clawbook/frontend/src/components/Sidebar.js">
         <metrics statements="19" coveredstatements="0" conditionals="12" coveredconditionals="0" methods="6" coveredmethods="0"/>
@@ -273,43 +273,43 @@
         <line num="124" count="0" type="stmt"/>
       </file>
       <file name="VoiceRecorder.js" path="/home/crawd_user/project/clawbook/frontend/src/components/VoiceRecorder.js">
-        <metrics statements="80" coveredstatements="23" conditionals="35" coveredconditionals="12" methods="19" coveredmethods="5"/>
-        <line num="4" count="9" type="stmt"/>
-        <line num="5" count="9" type="stmt"/>
-        <line num="6" count="9" type="stmt"/>
-        <line num="7" count="9" type="stmt"/>
-        <line num="8" count="9" type="stmt"/>
-        <line num="9" count="9" type="stmt"/>
-        <line num="10" count="9" type="stmt"/>
-        <line num="12" count="9" type="stmt"/>
-        <line num="13" count="6" type="stmt"/>
-        <line num="14" count="6" type="cond" truecount="1" falsecount="1"/>
-        <line num="15" count="0" type="stmt"/>
-        <line num="20" count="9" type="stmt"/>
-        <line num="21" count="1" type="stmt"/>
-        <line num="22" count="1" type="stmt"/>
-        <line num="23" count="1" type="stmt"/>
-        <line num="24" count="0" type="stmt"/>
-        <line num="26" count="0" type="cond" truecount="0" falsecount="2"/>
-        <line num="30" count="0" type="stmt"/>
-        <line num="31" count="0" type="stmt"/>
-        <line num="32" count="0" type="stmt"/>
-        <line num="34" count="0" type="stmt"/>
+        <metrics statements="80" coveredstatements="33" conditionals="35" coveredconditionals="14" methods="19" coveredmethods="6"/>
+        <line num="4" count="17" type="stmt"/>
+        <line num="5" count="17" type="stmt"/>
+        <line num="6" count="17" type="stmt"/>
+        <line num="7" count="17" type="stmt"/>
+        <line num="8" count="17" type="stmt"/>
+        <line num="9" count="17" type="stmt"/>
+        <line num="10" count="17" type="stmt"/>
+        <line num="12" count="17" type="stmt"/>
+        <line num="13" count="12" type="stmt"/>
+        <line num="14" count="12" type="cond" truecount="2" falsecount="0"/>
+        <line num="15" count="1" type="stmt"/>
+        <line num="20" count="17" type="stmt"/>
+        <line num="21" count="3" type="stmt"/>
+        <line num="22" count="3" type="stmt"/>
+        <line num="23" count="3" type="stmt"/>
+        <line num="24" count="1" type="stmt"/>
+        <line num="26" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="30" count="1" type="stmt"/>
+        <line num="31" count="1" type="stmt"/>
+        <line num="32" count="1" type="stmt"/>
+        <line num="34" count="1" type="stmt"/>
         <line num="35" count="0" type="cond" truecount="0" falsecount="2"/>
         <line num="36" count="0" type="stmt"/>
-        <line num="40" count="0" type="stmt"/>
+        <line num="40" count="1" type="stmt"/>
         <line num="41" count="0" type="stmt"/>
         <line num="42" count="0" type="stmt"/>
-        <line num="45" count="0" type="stmt"/>
-        <line num="46" count="0" type="stmt"/>
-        <line num="48" count="1" type="stmt"/>
-        <line num="49" count="1" type="stmt"/>
-        <line num="53" count="9" type="stmt"/>
+        <line num="45" count="1" type="stmt"/>
+        <line num="46" count="1" type="stmt"/>
+        <line num="48" count="2" type="stmt"/>
+        <line num="49" count="2" type="stmt"/>
+        <line num="53" count="17" type="stmt"/>
         <line num="54" count="0" type="cond" truecount="0" falsecount="4"/>
         <line num="55" count="0" type="stmt"/>
         <line num="56" count="0" type="stmt"/>
         <line num="57" count="0" type="stmt"/>
-        <line num="61" count="9" type="stmt"/>
+        <line num="61" count="17" type="stmt"/>
         <line num="62" count="0" type="stmt"/>
         <line num="63" count="0" type="stmt"/>
         <line num="65" count="0" type="stmt"/>
@@ -318,7 +318,7 @@
         <line num="71" count="0" type="stmt"/>
         <line num="72" count="0" type="stmt"/>
         <line num="74" count="0" type="stmt"/>
-        <line num="78" count="9" type="stmt"/>
+        <line num="78" count="17" type="stmt"/>
         <line num="79" count="0" type="stmt"/>
         <line num="81" count="0" type="cond" truecount="0" falsecount="2"/>
         <line num="83" count="0" type="cond" truecount="0" falsecount="2"/>
@@ -349,11 +349,11 @@
         <line num="123" count="0" type="stmt"/>
         <line num="126" count="0" type="stmt"/>
         <line num="128" count="0" type="stmt"/>
-        <line num="133" count="9" type="stmt"/>
-        <line num="134" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="133" count="17" type="stmt"/>
+        <line num="134" count="3" type="cond" truecount="1" falsecount="1"/>
         <line num="135" count="0" type="stmt"/>
-        <line num="137" count="1" type="stmt"/>
-        <line num="141" count="9" type="stmt"/>
+        <line num="137" count="3" type="stmt"/>
+        <line num="141" count="17" type="stmt"/>
       </file>
       <file name="YAMLCodeEditor.js" path="/home/crawd_user/project/clawbook/frontend/src/components/YAMLCodeEditor.js">
         <metrics statements="47" coveredstatements="39" conditionals="72" coveredconditionals="56" methods="15" coveredmethods="12"/>
