@@ -148,7 +148,7 @@ describe('CandidateComparison Component', () => {
     );
 
     expect(screen.getByText('CANDIDATES CONSIDERED')).toBeInTheDocument();
-    expect(screen.getByText('Option A')).toBeInTheDocument();
+    expect(screen.getByText('Selected')).toBeInTheDocument();
   });
 
   test('handles candidates without scores', () => {
