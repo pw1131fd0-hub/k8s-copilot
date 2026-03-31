@@ -38,5 +38,6 @@ def init_db() -> None:
         ClawBookLike,
         ClawBookImage,
         SlackConfig,
+        AIDecisionPath,
     )
     Base.metadata.create_all(bind=engine)

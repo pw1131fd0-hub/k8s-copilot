@@ -32,6 +32,7 @@ def client():
         ClawBookComment,
         ClawBookLike,
         ClawBookImage,
+        AIDecisionPath,
     )
 
     # Create test database
@@ -618,3 +619,153 @@ def test_multiple_users_like_same_post(client):
     # Verify like was added
     response = client.get(f"/api/v1/clawbook/posts/{post_id}")
     assert response.json()["like_count"] == 1
+
+
+# ============================================================================
+# AI Decision Path Visualization API Tests (v1.4)
+# ============================================================================
+
+
+def test_create_decision_path(client):
+    """POST /api/v1/clawbook/posts/{post_id}/decision-path should create decision path."""
+    # Create a post first
+    post_response = client.post(
+        "/api/v1/clawbook/posts",
+        json={
+            "mood": "😊",
+            "content": "Thought process test",
+            "author": "AI",
+            "images": [],
+        }
+    )
+    post_id = post_response.json()["id"]
+
+    # Create decision path
+    response = client.post(
+        f"/api/v1/clawbook/posts/{post_id}/decision-path",
+        json={
+            "reasoning_steps": [
+                {
+                    "step_number": 1,
+                    "title": "Analysis",
+                    "description": "Analyzing the post",
+                    "intermediate_conclusion": "Post is positive",
+                    "timestamp_ms": 50,
+                },
+                {
+                    "step_number": 2,
+                    "title": "Response",
+                    "description": "Generating response",
+                    "intermediate_conclusion": "Should be encouraging",
+                    "timestamp_ms": 100,
+                },
+            ],
+            "candidates": [
+                {
+                    "option": "Neutral response",
+                    "score": 0.6,
+                    "reasoning": "Less suitable",
+                    "rejected_at_step": 2,
+                }
+            ],
+            "final_decision": {
+                "option": "Encouraging response",
+                "confidence_score": 0.95,
+                "rationale": "Best matches the tone",
+            },
+            "key_factors": [
+                {
+                    "factor": "Post sentiment",
+                    "weight": 0.7,
+                    "influence": "positive",
+                    "description": "Positive sentiment detected",
+                }
+            ],
+            "model_used": "test-model",
+            "decision_time_ms": 150,
+        }
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["post_id"] == post_id
+    assert data["status"] == "created"
+
+
+def test_get_decision_path(client):
+    """GET /api/v1/clawbook/posts/{post_id}/decision-path should retrieve decision path."""
+    # Create a post
+    post_response = client.post(
+        "/api/v1/clawbook/posts",
+        json={
+            "mood": "😊",
+            "content": "Test post",
+            "author": "AI",
+            "images": [],
+        }
+    )
+    post_id = post_response.json()["id"]
+
+    # Create decision path
+    client.post(
+        f"/api/v1/clawbook/posts/{post_id}/decision-path",
+        json={
+            "reasoning_steps": [],
+            "candidates": [],
+            "final_decision": {
+                "option": "Response",
+                "confidence_score": 0.9,
+                "rationale": "Best choice",
+            },
+            "key_factors": [],
+            "model_used": "test",
+            "decision_time_ms": 100,
+        }
+    )
+
+    # Get decision path
+    response = client.get(f"/api/v1/clawbook/posts/{post_id}/decision-path")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["post_id"] == post_id
+    assert data["model_used"] == "test"
+    assert data["final_decision"]["confidence_score"] == 0.9
+
+
+def test_get_decision_path_not_found(client):
+    """GET decision-path for non-existent post should return 404."""
+    response = client.get("/api/v1/clawbook/posts/nonexistent/decision-path")
+    assert response.status_code == 404
+
+
+def test_get_decision_paths_history(client):
+    """GET /api/v1/clawbook/decision-paths/history should list decision paths."""
+    # Create a post and decision path
+    post_response = client.post(
+        "/api/v1/clawbook/posts",
+        json={"mood": "😊", "content": "Test", "author": "AI", "images": []},
+    )
+    post_id = post_response.json()["id"]
+
+    client.post(
+        f"/api/v1/clawbook/posts/{post_id}/decision-path",
+        json={
+            "reasoning_steps": [],
+            "candidates": [],
+            "final_decision": {
+                "option": "Response",
+                "confidence_score": 0.9,
+                "rationale": "Test",
+            },
+            "key_factors": [],
+            "model_used": "test",
+            "decision_time_ms": 100,
+        }
+    )
+
+    # Get history
+    response = client.get("/api/v1/clawbook/decision-paths/history?limit=10&offset=0")
+    assert response.status_code == 200
+    data = response.json()
+    assert "total" in data
+    assert "paths" in data
+    assert isinstance(data["paths"], list)

@@ -243,3 +243,80 @@ class SlackConfigResponse(SlackConfigBase):
     updated_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+# ============================================================================
+# AI Decision Path Visualization Schemas (v1.4)
+# ============================================================================
+
+
+class ReasoningStep(BaseModel):
+    """A single reasoning step in the AI decision process."""
+    step_number: int
+    title: str
+    description: str
+    intermediate_conclusion: str
+    timestamp_ms: int
+
+
+class DecisionCandidate(BaseModel):
+    """A candidate option considered by the AI during decision making."""
+    option: str
+    score: float  # 0.0 - 1.0
+    reasoning: str
+    rejected_at_step: int | None = None
+
+
+class FinalDecision(BaseModel):
+    """The final decision made by the AI."""
+    option: str
+    confidence_score: float  # 0.0 - 1.0
+    rationale: str
+
+
+class KeyFactor(BaseModel):
+    """A key factor influencing the AI decision."""
+    factor: str
+    weight: float  # 0.0 - 1.0
+    influence: Literal["positive", "negative", "neutral"]
+    description: str
+
+
+class AIDecisionPathBase(BaseModel):
+    """Base schema for AI decision path."""
+    reasoning_steps: list[ReasoningStep]
+    candidates: list[DecisionCandidate]
+    final_decision: FinalDecision
+    key_factors: list[KeyFactor]
+    model_used: str | None = None
+    decision_time_ms: int | None = None
+
+
+class AIDecisionPathCreate(AIDecisionPathBase):
+    """Schema for creating an AI decision path."""
+    pass
+
+
+class AIDecisionPathResponse(AIDecisionPathBase):
+    """Schema for AI decision path response."""
+    post_id: str
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class AIDecisionPathSummary(BaseModel):
+    """Summary schema for listing decision paths."""
+    post_id: str
+    model_used: str | None
+    final_decision_option: str
+    confidence_score: float
+    decision_time_ms: int | None
+    created_at: datetime
+
+
+class AIDecisionPathHistoryResponse(BaseModel):
+    """Schema for decision path history listing."""
+    total: int
+    paths: list[AIDecisionPathSummary]

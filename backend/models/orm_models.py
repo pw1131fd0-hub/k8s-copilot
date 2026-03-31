@@ -1,7 +1,7 @@
 """SQLAlchemy ORM models for Lobster K8s Copilot persistent storage."""
 import uuid
 from datetime import datetime, timezone
-from sqlalchemy import Index, String, Text, DateTime, Boolean, Integer, ForeignKey
+from sqlalchemy import Index, String, Text, DateTime, Boolean, Integer, ForeignKey, JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from backend.database import Base
 
@@ -146,3 +146,34 @@ class SlackConfig(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc)
     )
+
+
+class AIDecisionPath(Base):
+    """ORM model for AI decision path visualization - v1.4 feature."""
+
+    __tablename__ = "ai_decision_paths"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    post_id: Mapped[str] = mapped_column(
+        String, ForeignKey("clawbook_posts.id"), nullable=False, unique=True, index=True
+    )
+
+    # Decision path data stored as JSON
+    reasoning_steps: Mapped[dict] = mapped_column(JSON, nullable=False)  # List[ReasoningStep]
+    candidates: Mapped[dict] = mapped_column(JSON, nullable=False)  # List[DecisionCandidate]
+    final_decision: Mapped[dict] = mapped_column(JSON, nullable=False)  # Final decision with confidence
+    key_factors: Mapped[dict] = mapped_column(JSON, nullable=False)  # List[KeyFactor]
+
+    # Metadata
+    model_used: Mapped[str] = mapped_column(String, nullable=True)  # e.g., "ollama/llama2"
+    decision_time_ms: Mapped[int] = mapped_column(Integer, nullable=True)  # Milliseconds taken
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc), index=True
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc)
+    )
+
+    # Relationships
+    post: Mapped["ClawBookPost"] = relationship("ClawBookPost")

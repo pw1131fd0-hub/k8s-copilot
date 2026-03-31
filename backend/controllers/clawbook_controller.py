@@ -14,6 +14,7 @@ from backend.models.orm_models import (
     ClawBookComment,
     ClawBookLike,
     ClawBookImage,
+    AIDecisionPath,
 )
 from backend.models.schemas import (
     ClawBookPostCreate,
@@ -24,6 +25,10 @@ from backend.models.schemas import (
     ClawBookImageCreate,
     ClawBookMoodSummaryResponse,
     ClawBookMoodStats,
+    AIDecisionPathCreate,
+    AIDecisionPathResponse,
+    AIDecisionPathHistoryResponse,
+    AIDecisionPathSummary,
 )
 from backend.services.export_service import ExportService
 
@@ -430,3 +435,157 @@ def export_posts(
         media_type=media_type,
         headers={"Content-Disposition": f"attachment; filename={filename}"},
     )
+
+
+# ============================================================================
+# AI Decision Path Visualization API (v1.4)
+# ============================================================================
+
+
+@router.get("/posts/{post_id}/decision-path", response_model=AIDecisionPathResponse)
+def get_decision_path(
+    post_id: str,
+    db: Annotated[Session, Depends(get_db)],
+    user_id: Annotated[str, Depends(get_current_user_id)],
+) -> AIDecisionPathResponse:
+    """Get AI decision path for a specific post."""
+    # Verify post exists
+    post = db.query(ClawBookPost).filter(ClawBookPost.id == post_id).first()
+    if not post:
+        raise HTTPException(status_code=404, detail=f"Post {post_id} not found")
+
+    # Get decision path
+    decision_path = db.query(AIDecisionPath).filter(AIDecisionPath.post_id == post_id).first()
+    if not decision_path:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No decision path found for post {post_id}. Run analysis to generate it.",
+        )
+
+    return AIDecisionPathResponse(
+        post_id=decision_path.post_id,
+        reasoning_steps=decision_path.reasoning_steps,
+        candidates=decision_path.candidates,
+        final_decision=decision_path.final_decision,
+        key_factors=decision_path.key_factors,
+        model_used=decision_path.model_used,
+        decision_time_ms=decision_path.decision_time_ms,
+        created_at=decision_path.created_at,
+        updated_at=decision_path.updated_at,
+    )
+
+
+@router.post("/posts/{post_id}/decision-path", response_model=dict)
+def create_or_update_decision_path(
+    post_id: str,
+    path_data: AIDecisionPathCreate,
+    db: Annotated[Session, Depends(get_db)],
+    user_id: Annotated[str, Depends(get_current_user_id)],
+) -> dict:
+    """Create or update AI decision path for a post."""
+    # Verify post exists
+    post = db.query(ClawBookPost).filter(ClawBookPost.id == post_id).first()
+    if not post:
+        raise HTTPException(status_code=404, detail=f"Post {post_id} not found")
+
+    # Check if decision path already exists
+    existing = db.query(AIDecisionPath).filter(AIDecisionPath.post_id == post_id).first()
+
+    # Convert Pydantic models to dictionaries for JSON storage
+    reasoning_steps_list = [step.model_dump() for step in path_data.reasoning_steps]
+    candidates_list = [cand.model_dump() for cand in path_data.candidates]
+    final_decision_dict = path_data.final_decision.model_dump()
+    key_factors_list = [factor.model_dump() for factor in path_data.key_factors]
+
+    if existing:
+        # Update existing
+        existing.reasoning_steps = reasoning_steps_list
+        existing.candidates = candidates_list
+        existing.final_decision = final_decision_dict
+        existing.key_factors = key_factors_list
+        existing.model_used = path_data.model_used
+        existing.decision_time_ms = path_data.decision_time_ms
+        existing.updated_at = datetime.now(timezone.utc)
+        db.commit()
+        return {
+            "message": "Decision path updated successfully",
+            "post_id": post_id,
+            "status": "updated",
+        }
+    else:
+        # Create new
+        new_path = AIDecisionPath(
+            id=str(uuid.uuid4()),
+            post_id=post_id,
+            reasoning_steps=reasoning_steps_list,
+            candidates=candidates_list,
+            final_decision=final_decision_dict,
+            key_factors=key_factors_list,
+            model_used=path_data.model_used,
+            decision_time_ms=path_data.decision_time_ms,
+        )
+        db.add(new_path)
+        db.commit()
+        return {
+            "message": "Decision path created successfully",
+            "post_id": post_id,
+            "status": "created",
+        }
+
+
+@router.get("/decision-paths/history", response_model=AIDecisionPathHistoryResponse)
+def get_decision_paths_history(
+    db: Annotated[Session, Depends(get_db)],
+    user_id: Annotated[str, Depends(get_current_user_id)],
+    limit: Annotated[int, Query(ge=1, le=100)] = 20,
+    offset: Annotated[int, Query(ge=0)] = 0,
+    start_date: Annotated[str, Query()] = None,
+    end_date: Annotated[str, Query()] = None,
+    model: Annotated[str, Query()] = None,
+) -> AIDecisionPathHistoryResponse:
+    """Get history of AI decision paths with optional filtering."""
+    query = db.query(AIDecisionPath)
+
+    # Apply filters
+    if start_date:
+        try:
+            start = datetime.fromisoformat(f"{start_date}T00:00:00+00:00")
+            query = query.filter(AIDecisionPath.created_at >= start)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid start_date format. Use YYYY-MM-DD")
+
+    if end_date:
+        try:
+            end = datetime.fromisoformat(f"{end_date}T23:59:59+00:00")
+            query = query.filter(AIDecisionPath.created_at <= end)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid end_date format. Use YYYY-MM-DD")
+
+    if model:
+        query = query.filter(AIDecisionPath.model_used == model)
+
+    # Get total count
+    total = query.count()
+
+    # Get paginated results
+    paths = (
+        query.order_by(AIDecisionPath.created_at.desc())
+        .limit(limit)
+        .offset(offset)
+        .all()
+    )
+
+    # Convert to summary format
+    summaries = [
+        AIDecisionPathSummary(
+            post_id=path.post_id,
+            model_used=path.model_used,
+            final_decision_option=path.final_decision.get("option", ""),
+            confidence_score=path.final_decision.get("confidence_score", 0.0),
+            decision_time_ms=path.decision_time_ms,
+            created_at=path.created_at,
+        )
+        for path in paths
+    ]
+
+    return AIDecisionPathHistoryResponse(total=total, paths=summaries)
