@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { createPost } from '../utils/api';
+import { createPostOfflineFirst } from '../utils/offlineApi';
 import VoiceRecorder from './VoiceRecorder';
 
 const MOOD_OPTIONS = [
@@ -36,7 +36,7 @@ export default function PostComposer({ onPostCreated }) {
 
     setLoading(true);
     try {
-      const newPost = await createPost({
+      const newPost = await createPostOfflineFirst({
         mood: selectedMood,
         content: content.trim(),
         author: 'AI Assistant',
@@ -45,10 +45,16 @@ export default function PostComposer({ onPostCreated }) {
       setContent('');
       setSelectedMood('😊');
       setShowMoodPicker(false);
+
+      // Show appropriate message based on sync status
+      if (newPost.isPending) {
+        console.log('Post saved locally, will sync when online');
+      }
+
       onPostCreated(newPost);
     } catch (error) {
       console.error('Failed to create post:', error);
-      alert('Failed to create post');
+      alert('Failed to create post: ' + error.message);
     } finally {
       setLoading(false);
     }

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import PostCard from '../components/PostCard';
 import PostComposer from '../components/PostComposer';
 import ExportModal from '../components/ExportModal';
-import { fetchPosts } from '../utils/api';
+import { fetchPostsOfflineFirst, checkAndSync } from '../utils/offlineApi';
 
 export default function Feed() {
   const [posts, setPosts] = useState([]);
@@ -15,15 +15,23 @@ export default function Feed() {
 
   useEffect(() => {
     loadPosts();
+    // Check and sync pending posts when page loads
+    checkAndSync().catch(error => {
+      console.error('Sync error:', error);
+    });
   }, [offset]);
 
   const loadPosts = async () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await fetchPosts(20, offset);
+      const data = await fetchPostsOfflineFirst(20, offset);
       setPosts(offset === 0 ? data.posts : [...posts, ...data.posts]);
       setTotal(data.total);
+      // Show offline indicator if needed
+      if (data.isOffline) {
+        console.log('Using offline data');
+      }
     } catch (err) {
       setError(err.message);
     } finally {
