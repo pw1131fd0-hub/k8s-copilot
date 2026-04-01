@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import PostCard from '../components/PostCard';
 import PostComposer from '../components/PostComposer';
 import ExportModal from '../components/ExportModal';
 import { fetchPostsOfflineFirst, checkAndSync } from '../utils/offlineApi';
 
 export default function Feed() {
+  const { t } = useTranslation();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);

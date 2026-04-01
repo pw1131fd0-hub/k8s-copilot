@@ -188,5 +188,13 @@
     "noMoodsRecorded": "還沒有心情記錄",
     "postsInDays": "7 天內的條目",
     "moodTypes": "心情類型："
+  },
+  "feed": {
+    "all": "全部",
+    "errorLoadingPosts": "載入文章出錯：{{error}}",
+    "noPosts": "還沒有文章",
+    "shareYourFirst": "分享你的第一個想法吧！",
+    "loadMore": "載入更多",
+    "exportTooltip": "匯出日記條目"
   }
 }

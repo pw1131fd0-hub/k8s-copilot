@@ -188,5 +188,13 @@
     "noMoodsRecorded": "まだ心情が記録されていません",
     "postsInDays": "7日間のエントリー",
     "moodTypes": "気分タイプ："
+  },
+  "feed": {
+    "all": "すべて",
+    "errorLoadingPosts": "投稿の読み込みエラー：{{error}}",
+    "noPosts": "まだ投稿がありません",
+    "shareYourFirst": "最初の考えをシェアしましょう！",
+    "loadMore": "さらに読み込む",
+    "exportTooltip": "日記エントリをエクスポート"
   }
 }
