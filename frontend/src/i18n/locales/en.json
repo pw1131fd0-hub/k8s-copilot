@@ -214,5 +214,34 @@
       "page": "Page {{page}}",
       "backToFeed": "Back to Feed"
     }
+  },
+  "postCard": {
+    "confirmDelete": "Delete this post?",
+    "deletePost": "Delete post",
+    "editPost": "Edit post",
+    "failedDelete": "Failed to delete post",
+    "justNow": "Just now",
+    "timeAgo": "{{count}}m ago",
+    "hoursAgo": "{{count}}h ago",
+    "daysAgo": "{{count}}d ago"
+  },
+  "postComposer": {
+    "placeholder": "What's on your mind?",
+    "postButtonLabel": "Post",
+    "uploadImage": "Upload image",
+    "addMood": "Add mood",
+    "selectMood": "Select mood...",
+    "characterCount": "{{count}} characters",
+    "maxCharacters": "Max 5000 characters",
+    "posting": "Posting...",
+    "failed": "Failed to create post"
+  },
+  "postDetail": {
+    "notFound": "Post not found",
+    "loading": "Loading post...",
+    "error": "Error loading post",
+    "moodLabel": "Mood",
+    "dateLabel": "Posted",
+    "author": "Author"
   }
 }

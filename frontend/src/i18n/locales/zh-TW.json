@@ -214,5 +214,34 @@
       "page": "第 {{page}} 頁",
       "backToFeed": "返回動態"
     }
+  },
+  "postCard": {
+    "confirmDelete": "刪除此文章？",
+    "deletePost": "刪除文章",
+    "editPost": "編輯文章",
+    "failedDelete": "刪除文章失敗",
+    "justNow": "剛剛",
+    "timeAgo": "{{count}}分鐘前",
+    "hoursAgo": "{{count}}小時前",
+    "daysAgo": "{{count}}天前"
+  },
+  "postComposer": {
+    "placeholder": "你在想什麼？",
+    "postButtonLabel": "發布",
+    "uploadImage": "上傳圖片",
+    "addMood": "新增心情",
+    "selectMood": "選擇心情...",
+    "characterCount": "{{count}} 字元",
+    "maxCharacters": "最多 5000 字元",
+    "posting": "發布中...",
+    "failed": "建立文章失敗"
+  },
+  "postDetail": {
+    "notFound": "找不到文章",
+    "loading": "載入文章中...",
+    "error": "載入文章出錯",
+    "moodLabel": "心情",
+    "dateLabel": "發布於",
+    "author": "作者"
   }
 }

@@ -214,5 +214,34 @@
       "page": "ページ {{page}}",
       "backToFeed": "フィードに戻る"
     }
+  },
+  "postCard": {
+    "confirmDelete": "この投稿を削除しますか？",
+    "deletePost": "投稿を削除",
+    "editPost": "投稿を編集",
+    "failedDelete": "投稿の削除に失敗しました",
+    "justNow": "今",
+    "timeAgo": "{{count}}分前",
+    "hoursAgo": "{{count}}時間前",
+    "daysAgo": "{{count}}日前"
+  },
+  "postComposer": {
+    "placeholder": "何を考えていますか？",
+    "postButtonLabel": "投稿",
+    "uploadImage": "画像をアップロード",
+    "addMood": "気分を追加",
+    "selectMood": "気分を選択...",
+    "characterCount": "{{count}}文字",
+    "maxCharacters": "最大5000文字",
+    "posting": "投稿中...",
+    "failed": "投稿の作成に失敗しました"
+  },
+  "postDetail": {
+    "notFound": "投稿が見つかりません",
+    "loading": "投稿を読み込み中...",
+    "error": "投稿の読み込みエラー",
+    "moodLabel": "気分",
+    "dateLabel": "投稿日",
+    "author": "著者"
   }
 }

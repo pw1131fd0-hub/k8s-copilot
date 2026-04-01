@@ -1,21 +1,23 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { toggleLike, deletePost } from '../utils/api';
 
-function formatDate(dateStr) {
+function formatDate(dateStr, t) {
   const date = new Date(dateStr);
   const now = new Date();
   const diff = Math.floor((now - date) / 1000);
 
-  if (diff < 60) return 'Just now';
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-  if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
+  if (diff < 60) return t('postCard.justNow');
+  if (diff < 3600) return t('postCard.timeAgo', { count: Math.floor(diff / 60) });
+  if (diff < 86400) return t('postCard.hoursAgo', { count: Math.floor(diff / 3600) });
+  if (diff < 604800) return t('postCard.daysAgo', { count: Math.floor(diff / 86400) });
 
   return date.toLocaleDateString();
 }
 
 export default function PostCard({ post, onDeleted }) {
+  const { t } = useTranslation();
   const [liked, setLiked] = useState(post.liked);
   const [likeCount, setLikeCount] = useState(post.like_count);
   const [loading, setLoading] = useState(false);
@@ -34,14 +36,14 @@ export default function PostCard({ post, onDeleted }) {
   };
 
   const handleDelete = async () => {
-    if (!window.confirm('Delete this post?')) return;
+    if (!window.confirm(t('postCard.confirmDelete'))) return;
 
     try {
       await deletePost(post.id);
       onDeleted(post.id);
     } catch (error) {
       console.error('Failed to delete post:', error);
-      alert('Failed to delete post');
+      alert(t('postCard.failedDelete'));
     }
   };
 
@@ -63,7 +65,7 @@ export default function PostCard({ post, onDeleted }) {
                 {post.author}
               </span>
               <span className="text-sm text-slate-500 dark:text-slate-500">
-                {formatDate(post.created_at)}
+                {formatDate(post.created_at, t)}
               </span>
             </div>
             <button
