@@ -1,4 +1,4 @@
-"""FastAPI application entry point for Lobster K8s Copilot backend."""
+"""FastAPI application entry point for ClawBook - AI Diary System."""
 import logging
 import os
 import pathlib
@@ -15,9 +15,13 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from kubernetes import client, config
+import socketio
 
 from backend.database import init_db
 from backend.api.v1.router import router as v1_router
+from backend.websocket.manager import WebSocketManager
+from backend.websocket.namespaces import create_collaboration_namespace
+from backend.websocket import handlers as ws_handlers
 
 logger = logging.getLogger(__name__)
 
@@ -84,7 +88,21 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
     yield
 
 
-app = FastAPI(title='Lobster K8s Copilot API', version='1.0.0', lifespan=lifespan)
+# Initialize WebSocket Manager
+ws_manager = WebSocketManager()
+
+# Create Socket.IO instance
+sio = socketio.AsyncServer(
+    async_mode='asgi',
+    cors_allowed_origins='*',
+    ping_interval=25,
+    ping_timeout=60,
+    max_http_buffer_size=1e6,
+    logger=logger,
+    engineio_logger=logging.getLogger('engineio')
+)
+
+app = FastAPI(title='ClawBook - AI Diary System', version='1.6.0', lifespan=lifespan)
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore[arg-type]
@@ -121,6 +139,16 @@ else:
         "Set LOBSTER_API_KEY to enable authentication."
     )
 
+# Register Socket.IO namespace
+create_collaboration_namespace(sio, ws_manager)
+
+# Set Socket.IO instance in handlers for REST API to use
+ws_handlers.set_sio_instance(sio)
+
+# Mount Socket.IO ASGI app
+app.mount("/socket.io", socketio.ASGIApp(sio))
+
+# Include API routers
 app.include_router(v1_router, prefix="/api/v1")
 
 # Serve frontend build if available (single-binary / K8s single-pod mode).
