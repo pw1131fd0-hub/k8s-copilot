@@ -2,9 +2,11 @@
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
+import asyncio
 
 from backend.database import get_db
 from backend.services.collaboration_service import CollaborationService
+from backend.services.notification_service import NotificationService
 from backend.models.schemas import (
     ShareCreateRequest,
     ShareResponse,
@@ -181,13 +183,13 @@ def delete_group(
 # ========== Comment Endpoints ==========
 
 @router.post("/posts/{post_id}/comments", response_model=CommentResponse)
-def add_comment(
+async def add_comment(
     post_id: str,
     request: CommentCreateRequest,
     current_user_id: str = Depends(get_current_user_id),
     db: Session = Depends(get_db),
 ):
-    """Add a comment to a post."""
+    """Add a comment to a post and broadcast via WebSocket."""
     try:
         comment = CollaborationService.add_comment(
             db=db,
@@ -197,6 +199,16 @@ def add_comment(
             is_suggestion=request.is_suggestion or False,
             parent_id=request.parent_id,
         )
+
+        # Emit real-time comment notification
+        await NotificationService.notify_comment_new(
+            db=db,
+            post_id=post_id,
+            comment_id=comment.id,
+            author_id=current_user_id,
+            content=comment.content
+        )
+
         return CommentResponse.from_orm(comment)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -216,27 +228,58 @@ def get_comments(
 
 
 @router.patch("/comments/{comment_id}")
-def update_comment_status(
+async def update_comment_status(
     comment_id: str,
     status: str = Query(..., description="New status: open, accepted, rejected, resolved"),
     db: Session = Depends(get_db),
 ):
-    """Update comment status (accept/reject suggestion)."""
+    """Update comment status (accept/reject suggestion) and broadcast via WebSocket."""
     try:
         comment = CollaborationService.update_comment_status(db=db, comment_id=comment_id, status=status)
+
+        # Emit update notification
+        await NotificationService.notify_comment_updated(
+            db=db,
+            post_id=comment.post_id,
+            comment_id=comment.id,
+            content=comment.content
+        )
+
         return CommentResponse.from_orm(comment)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
 
 
 @router.delete("/comments/{comment_id}")
-def delete_comment(
+async def delete_comment(
     comment_id: str,
     db: Session = Depends(get_db),
 ):
-    """Delete a comment."""
-    CollaborationService.delete_comment(db=db, comment_id=comment_id)
-    return {"message": "Comment deleted successfully"}
+    """Delete a comment and broadcast via WebSocket."""
+    try:
+        # Get comment before deletion to find its post_id
+        from backend.models.orm_models import CollaborationComment
+        comment = db.query(CollaborationComment).filter(CollaborationComment.id == comment_id).first()
+        if not comment:
+            raise HTTPException(status_code=404, detail="Comment not found")
+
+        post_id = comment.post_id
+
+        # Delete the comment
+        CollaborationService.delete_comment(db=db, comment_id=comment_id)
+
+        # Emit deletion notification
+        await NotificationService.notify_comment_deleted(
+            db=db,
+            post_id=post_id,
+            comment_id=comment_id
+        )
+
+        return {"message": "Comment deleted successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 # ========== Activity Log Endpoints ==========

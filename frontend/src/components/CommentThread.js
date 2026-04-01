@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useCommentUpdates } from '../hooks/useWebSocket';
 import {
   getCollaborationComments,
   addCollaborationComment,
@@ -14,6 +15,44 @@ export default function CommentThread({ postId, onCommentAdded }) {
   const [newComment, setNewComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
+
+  // Handle real-time comment updates from WebSocket
+  const handleNewComment = useCallback((data) => {
+    console.log('Real-time comment received:', data);
+    const newCommentData = {
+      id: data.comment_id,
+      post_id: data.post_id,
+      author_id: data.author_id,
+      content: data.content,
+      created_at: data.timestamp,
+      is_suggestion: false,
+    };
+    setComments(prev => [...prev, newCommentData]);
+  }, []);
+
+  const handleCommentUpdated = useCallback((data) => {
+    console.log('Comment updated:', data);
+    setComments(prev =>
+      prev.map(c =>
+        c.id === data.comment_id
+          ? { ...c, content: data.content, updated_at: data.updated_at }
+          : c
+      )
+    );
+  }, []);
+
+  const handleCommentDeleted = useCallback((data) => {
+    console.log('Comment deleted:', data);
+    setComments(prev => prev.filter(c => c.id !== data.comment_id));
+  }, []);
+
+  // Subscribe to real-time comment updates
+  useCommentUpdates(
+    postId,
+    handleNewComment,
+    handleCommentUpdated,
+    handleCommentDeleted
+  );
 
   useEffect(() => {
     loadComments();
