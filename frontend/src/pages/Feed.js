@@ -83,7 +83,7 @@ export default function Feed() {
                   : 'bg-slate-800 dark:bg-slate-800 text-slate-300 dark:text-slate-300 hover:bg-slate-700'
               }`}
             >
-              All
+              {t('feed.all')}
             </button>
             {MOOD_FILTERS.map((mood) => (
               <button
@@ -102,9 +102,9 @@ export default function Feed() {
           <button
             onClick={() => setShowExportModal(true)}
             className="px-3 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap bg-slate-800 dark:bg-slate-800 text-slate-300 dark:text-slate-300 hover:bg-slate-700"
-            title="Export journal entries"
+            title={t('feed.exportTooltip')}
           >
-            📥 Export
+            📥 {t('action.export')}
           </button>
         </div>
       </div>
@@ -113,14 +113,14 @@ export default function Feed() {
       <div className="divide-y divide-slate-800 dark:divide-slate-700">
         {error && (
           <div className="p-4 text-center text-red-400">
-            <p>Error loading posts: {error}</p>
+            <p>{t('feed.errorLoadingPosts', { error })}</p>
           </div>
         )}
 
         {filteredPosts.length === 0 && !loading ? (
           <div className="text-center py-12 text-slate-400">
-            <p className="text-lg mb-2">No posts yet</p>
-            <p className="text-sm">Share your first thought with the world!</p>
+            <p className="text-lg mb-2">{t('feed.noPosts')}</p>
+            <p className="text-sm">{t('feed.shareYourFirst')}</p>
           </div>
         ) : (
           filteredPosts.map((post) => (
@@ -148,7 +148,7 @@ export default function Feed() {
             onClick={() => setOffset(offset + 20)}
             className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
           >
-            Load More
+            {t('feed.loadMore')}
           </button>
         </div>
       )}
