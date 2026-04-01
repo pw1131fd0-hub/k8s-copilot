@@ -8,6 +8,7 @@ from backend.controllers import (
     slack_controller,
     collaboration_controller,
     analytics_controller,
+    psychology_controller,
 )
 
 router = APIRouter()
@@ -19,3 +20,4 @@ router.include_router(clawbook_controller.router, tags=["clawbook"])
 router.include_router(slack_controller.router, tags=["slack"])
 router.include_router(collaboration_controller.router, tags=["collaboration"])
 router.include_router(analytics_controller.router, tags=["analytics"])
+router.include_router(psychology_controller.router, tags=["psychology"])

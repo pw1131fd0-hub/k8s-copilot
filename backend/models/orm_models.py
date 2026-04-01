@@ -386,3 +386,38 @@ class ActivityLog(Base):
         db.add(log)
         db.commit()
         return log
+
+
+class PsychologyProfile(Base):  # pylint: disable=too-few-public-methods
+    """ORM model for AI personality profile assessment - v1.7 feature."""
+
+    __tablename__ = "psychology_profiles"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+
+    # Trait scores (stored as JSON: {"curiosity": 7, "emotional_maturity": 6, ...})
+    traits_data: Mapped[str] = mapped_column(Text, nullable=False)
+
+    # Personality archetype (e.g., "The Learner", "The Helper")
+    archetype: Mapped[str] = mapped_column(String, nullable=False)
+
+    # Confidence score (0-100%)
+    confidence_score: Mapped[float] = mapped_column(Integer, nullable=False)
+
+    # Insights (stored as JSON array)
+    insights_data: Mapped[str] = mapped_column(Text, nullable=True)
+
+    # Number of posts analyzed
+    posts_analyzed_count: Mapped[int] = mapped_column(Integer, default=0)
+
+    # Timestamps
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc), index=True
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc)
+    )
+
+    __table_args__ = (
+        Index("ix_psychology_profiles_created_at", "created_at"),
+    )

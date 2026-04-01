@@ -461,3 +461,47 @@ class SentimentAnalyticsResponse(SentimentTrendResponse):
     """Full sentiment analytics response including heatmap and mood distribution."""
     mood_distribution: dict[str, int]
     heatmap: list[HeatmapPoint]
+
+
+# ============================================================================
+# Psychology Module Schemas (v1.7)
+# ============================================================================
+
+
+class PersonalityTrait(BaseModel):
+    """Single personality trait with score."""
+    name: str  # curiosity, emotional_maturity, consistency, growth_mindset, resilience
+    score: int  # 1-10
+    description: str | None = None
+
+
+class PersonalityProfile(BaseModel):
+    """Personality profile response schema."""
+    traits: dict[str, int]  # {trait_name: score}
+    archetype: str  # e.g., "The Learner"
+    confidence: float  # 0-100%
+    insights: list[str]
+    posts_analyzed: int
+    assessment_date: str
+
+
+class PsychologyAssessmentResponse(BaseModel):
+    """Response schema for psychology assessment request."""
+    success: bool
+    assessment: PersonalityProfile | None = None
+    error: str | None = None
+    posts_available: int | None = None
+
+
+class PsychologyProfileResponse(BaseModel):
+    """Cached psychology profile response."""
+    id: str
+    traits: dict[str, int]
+    archetype: str
+    confidence_score: float
+    insights: list[str]
+    posts_analyzed_count: int
+    created_at: str
+    updated_at: str
+
+    model_config = {"from_attributes": True}
