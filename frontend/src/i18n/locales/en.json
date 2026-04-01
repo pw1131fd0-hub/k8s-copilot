@@ -196,5 +196,15 @@
     "shareYourFirst": "Share your first thought with the world!",
     "loadMore": "Load More",
     "exportTooltip": "Export journal entries"
+  },
+  "page": {
+    "trends": {
+      "title": "Your Emotion Trends",
+      "subtitle": "Visualize your emotional journey over time"
+    },
+    "decisionPaths": {
+      "title": "Your Decision Paths",
+      "subtitle": "Explore your AI reasoning and decision-making patterns"
+    }
   }
 }

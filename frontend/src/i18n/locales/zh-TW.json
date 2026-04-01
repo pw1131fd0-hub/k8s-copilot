@@ -196,5 +196,15 @@
     "shareYourFirst": "分享你的第一個想法吧！",
     "loadMore": "載入更多",
     "exportTooltip": "匯出日記條目"
+  },
+  "page": {
+    "trends": {
+      "title": "你的情感趨勢",
+      "subtitle": "觀看你的情感旅程隨時間的變化"
+    },
+    "decisionPaths": {
+      "title": "你的決策路徑",
+      "subtitle": "探索你的 AI 推理和決策模式"
+    }
   }
 }
