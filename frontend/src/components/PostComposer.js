@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { createPostOfflineFirst } from '../utils/offlineApi';
 import VoiceRecorder from './VoiceRecorder';
 
@@ -16,6 +17,7 @@ const MOOD_OPTIONS = [
 ];
 
 export default function PostComposer({ onPostCreated }) {
+  const { t } = useTranslation();
   const [content, setContent] = useState('');
   const [selectedMood, setSelectedMood] = useState('😊');
   const [loading, setLoading] = useState(false);
@@ -24,8 +26,8 @@ export default function PostComposer({ onPostCreated }) {
   const handleVoiceTranscribed = (transcript) => {
     setContent((prevContent) => {
       const newContent = prevContent
-        ? `${prevContent}\n\n[Voice Input] ${transcript}`
-        : `[Voice Input] ${transcript}`;
+        ? `${prevContent}\n\n[${t('voice.title')}] ${transcript}`
+        : `[${t('voice.title')}] ${transcript}`;
       return newContent;
     });
   };
@@ -54,7 +56,7 @@ export default function PostComposer({ onPostCreated }) {
       onPostCreated(newPost);
     } catch (error) {
       console.error('Failed to create post:', error);
-      alert('Failed to create post: ' + error.message);
+      alert(t('postComposer.failed') + ': ' + error.message);
     } finally {
       setLoading(false);
     }
@@ -98,7 +100,7 @@ export default function PostComposer({ onPostCreated }) {
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="What's on your mind, AI?"
+            placeholder={t('postComposer.placeholder')}
             className="flex-1 bg-slate-800 dark:bg-slate-800 text-slate-100 dark:text-slate-100 rounded-lg px-3 py-2 placeholder-slate-500 dark:placeholder-slate-500 border border-slate-700 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none min-h-24"
           />
           <div className="flex justify-between items-center">
@@ -108,7 +110,7 @@ export default function PostComposer({ onPostCreated }) {
               disabled={!content.trim() || loading}
               className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
             >
-              {loading ? 'Posting...' : 'Share'}
+              {loading ? t('postComposer.posting') : t('postComposer.postButtonLabel')}
             </button>
           </div>
         </div>

@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../utils/api';
 
 export default function ExportModal({ isOpen, onClose }) {
+  const { t } = useTranslation();
   const [format, setFormat] = useState('json');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -29,7 +31,7 @@ export default function ExportModal({ isOpen, onClose }) {
       });
 
       if (!response.ok) {
-        throw new Error('Export failed');
+        throw new Error(t('export.error'));
       }
 
       // Get the file content
@@ -50,7 +52,7 @@ export default function ExportModal({ isOpen, onClose }) {
 
       onClose();
     } catch (err) {
-      setError(err.message || 'Export failed. Please try again.');
+      setError(err.message || t('export.error'));
     } finally {
       setIsLoading(false);
     }
@@ -61,13 +63,13 @@ export default function ExportModal({ isOpen, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-slate-900 rounded-lg shadow-xl p-6 max-w-md w-full mx-4 dark:bg-slate-800">
-        <h2 className="text-2xl font-bold mb-4 text-slate-100">Export Journal</h2>
+        <h2 className="text-2xl font-bold mb-4 text-slate-100">{t('export.title')}</h2>
 
         <form onSubmit={handleExport} className="space-y-4">
           {/* Format Selection */}
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
-              Export Format
+              {t('export.format')}
             </label>
             <select
               value={format}
