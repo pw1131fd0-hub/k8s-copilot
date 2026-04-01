@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import OnlineUsersList from './OnlineUsersList';
 import {
   createGroup,
   getGroups,
@@ -230,6 +231,11 @@ export default function GroupManager() {
               <span className="font-semibold text-slate-100 dark:text-slate-100">
                 {selectedGroup.visibility}
               </span>
+            </div>
+
+            {/* Online Users - Real-time Presence */}
+            <div className="mb-6">
+              <OnlineUsersList groupId={selectedGroup.id} />
             </div>
 
             {/* Members section */}

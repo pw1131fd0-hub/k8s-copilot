@@ -1,8 +1,9 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from './LanguageSwitcher';
+import NotificationBell from './NotificationBell';
 
-export default function Header({ theme, onThemeToggle }) {
+export default function Header({ theme, onThemeToggle, userId = 'user' }) {
   const { t } = useTranslation();
   return (
     <header className="sticky top-0 z-50 bg-slate-900 dark:bg-slate-900 border-b border-slate-800 dark:border-slate-700 backdrop-blur supports-[backdrop-filter]:bg-slate-900/75">
@@ -20,8 +21,9 @@ export default function Header({ theme, onThemeToggle }) {
           </div>
         </div>
 
-        {/* Controls: Language Switcher + Theme Toggle */}
+        {/* Controls: NotificationBell + Language Switcher + Theme Toggle */}
         <div className="flex items-center gap-3">
+          <NotificationBell userId={userId} />
           <LanguageSwitcher />
           <button
           onClick={onThemeToggle}

@@ -1,7 +1,7 @@
 """Socket.IO namespace handlers for ClawBook collaboration."""
 import logging
 from typing import Optional
-from socketio import AsyncNamespace, emit
+from socketio import AsyncNamespace
 from backend.websocket.manager import WebSocketManager
 from backend.websocket.events import EventType, UserPresencePayload
 
@@ -25,7 +25,7 @@ class CollaborationNamespace(AsyncNamespace):
         logger.info(f"Client connected: {sid} as {user_id}")
 
         # Send acknowledgment
-        emit("connection:ack", {
+        await self.emit("connection:ack", {
             "status": "connected",
             "user_id": user_id,
             "message": "Welcome to ClawBook collaboration"
@@ -40,7 +40,7 @@ class CollaborationNamespace(AsyncNamespace):
             # Broadcast user offline notification to all rooms the user was in
             for group_id in list(self.manager.group_rooms.keys()):
                 if sid in self.manager.group_rooms[group_id]:
-                    emit("user:offline", {
+                    await self.emit("user:offline", {
                         "user_id": user_id,
                         "group_id": group_id,
                         "timestamp": datetime.utcnow().isoformat()
@@ -50,7 +50,7 @@ class CollaborationNamespace(AsyncNamespace):
         """Handle user joining a group room."""
         group_id = data.get("group_id")
         if not group_id:
-            emit("error", {"message": "group_id required"}, to=sid)
+            await self.emit("error", {"message": "group_id required"}, to=sid)
             return
 
         conn = self.manager.active_connections.get(sid)
@@ -62,7 +62,7 @@ class CollaborationNamespace(AsyncNamespace):
 
         # Notify others in the group that user is online
         group_members = self.manager.get_group_members(group_id)
-        emit("user:online", {
+        await self.emit("user:online", {
             "user_id": user_id,
             "group_id": group_id,
             "online_users": group_members,
@@ -86,7 +86,7 @@ class CollaborationNamespace(AsyncNamespace):
 
         # Notify others that user is offline
         group_members = self.manager.get_group_members(group_id)
-        emit("user:offline", {
+        await self.emit("user:offline", {
             "user_id": user_id,
             "group_id": group_id,
             "remaining_users": group_members,
@@ -99,7 +99,7 @@ class CollaborationNamespace(AsyncNamespace):
         """Handle user viewing a post (for comment updates)."""
         post_id = data.get("post_id")
         if not post_id:
-            emit("error", {"message": "post_id required"}, to=sid)
+            await self.emit("error", {"message": "post_id required"}, to=sid)
             return
 
         self.manager.join_post_room(sid, post_id)
@@ -121,11 +121,11 @@ class CollaborationNamespace(AsyncNamespace):
             return
 
         # Broadcast to all users viewing this post
-        emit("comment:new", data, to=f"post:{post_id}")
+        await self.emit("comment:new", data, to=f"post:{post_id}")
 
     async def on_ping(self, sid: str):
         """Handle ping from client."""
-        emit("pong", {"timestamp": datetime.utcnow().isoformat()}, to=sid)
+        await self.emit("pong", {"timestamp": datetime.utcnow().isoformat()}, to=sid)
 
     async def on_error(self, sid: str, data):
         """Handle errors from client."""
