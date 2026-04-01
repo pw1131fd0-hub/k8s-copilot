@@ -91,6 +91,141 @@ export async function fetchDecisionPathsHistory(limit = 20, offset = 0) {
   return response.json();
 }
 
+// Collaboration APIs (v1.6)
+export async function sharePost(postId, sharedWithIds, groupIds = [], permission = 'read') {
+  const response = await fetch(`${API_URL}/collaboration/posts/${postId}/share`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ shared_with_ids: sharedWithIds, group_ids: groupIds, permission }),
+  });
+  if (!response.ok) throw new Error('Failed to share post');
+  return response.json();
+}
+
+export async function getSharedWithMe(limit = 50) {
+  const response = await fetch(`${API_URL}/collaboration/posts/shared-with-me?limit=${limit}`);
+  if (!response.ok) throw new Error('Failed to fetch shared posts');
+  return response.json();
+}
+
+export async function acceptShare(shareId) {
+  const response = await fetch(`${API_URL}/collaboration/shares/${shareId}/accept`, {
+    method: 'POST',
+  });
+  if (!response.ok) throw new Error('Failed to accept share');
+  return response.json();
+}
+
+export async function rejectShare(shareId) {
+  const response = await fetch(`${API_URL}/collaboration/shares/${shareId}/reject`, {
+    method: 'POST',
+  });
+  if (!response.ok) throw new Error('Failed to reject share');
+  return response.json();
+}
+
+export async function revokeShare(shareId) {
+  const response = await fetch(`${API_URL}/collaboration/shares/${shareId}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) throw new Error('Failed to revoke share');
+  return response.json();
+}
+
+// Group APIs
+export async function createGroup(groupData) {
+  const response = await fetch(`${API_URL}/collaboration/groups`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(groupData),
+  });
+  if (!response.ok) throw new Error('Failed to create group');
+  return response.json();
+}
+
+export async function getGroups() {
+  const response = await fetch(`${API_URL}/collaboration/groups`);
+  if (!response.ok) throw new Error('Failed to fetch groups');
+  return response.json();
+}
+
+export async function updateGroup(groupId, groupData) {
+  const response = await fetch(`${API_URL}/collaboration/groups/${groupId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(groupData),
+  });
+  if (!response.ok) throw new Error('Failed to update group');
+  return response.json();
+}
+
+export async function deleteGroup(groupId) {
+  const response = await fetch(`${API_URL}/collaboration/groups/${groupId}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) throw new Error('Failed to delete group');
+  return response.json();
+}
+
+export async function addGroupMember(groupId, userId) {
+  const response = await fetch(`${API_URL}/collaboration/groups/${groupId}/members`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ user_id: userId }),
+  });
+  if (!response.ok) throw new Error('Failed to add group member');
+  return response.json();
+}
+
+export async function removeGroupMember(groupId, userId) {
+  const response = await fetch(`${API_URL}/collaboration/groups/${groupId}/members/${userId}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) throw new Error('Failed to remove group member');
+  return response.json();
+}
+
+// Comment APIs
+export async function addCollaborationComment(postId, commentData) {
+  const response = await fetch(`${API_URL}/collaboration/posts/${postId}/comments`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(commentData),
+  });
+  if (!response.ok) throw new Error('Failed to add comment');
+  return response.json();
+}
+
+export async function getCollaborationComments(postId) {
+  const response = await fetch(`${API_URL}/collaboration/posts/${postId}/comments`);
+  if (!response.ok) throw new Error('Failed to fetch comments');
+  return response.json();
+}
+
+export async function updateComment(commentId, status) {
+  const response = await fetch(`${API_URL}/collaboration/comments/${commentId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status }),
+  });
+  if (!response.ok) throw new Error('Failed to update comment');
+  return response.json();
+}
+
+export async function deleteCollaborationComment(commentId) {
+  const response = await fetch(`${API_URL}/collaboration/comments/${commentId}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) throw new Error('Failed to delete comment');
+  return response.json();
+}
+
+export async function getActivityLog(groupId) {
+  const response = await fetch(`${API_URL}/collaboration/groups/${groupId}/activity`);
+  if (!response.ok) throw new Error('Failed to fetch activity log');
+  return response.json();
+}
+
 // API client object for backward compatibility
 export const api = {
   baseURL: API_URL,
