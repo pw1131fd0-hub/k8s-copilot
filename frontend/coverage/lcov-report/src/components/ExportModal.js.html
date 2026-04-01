@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">24.32% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>9/37</span>
+                <span class='fraction'>0/38</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">20% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>4/20</span>
+                <span class='fraction'>0/20</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">20% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>1/5</span>
+                <span class='fraction'>0/5</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">23.52% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>8/34</span>
+                <span class='fraction'>0/35</span>
             </div>
         
             
@@ -200,17 +200,21 @@
 <a name='L135'></a><a href='#L135'>135</a>
 <a name='L136'></a><a href='#L136'>136</a>
 <a name='L137'></a><a href='#L137'>137</a>
-<a name='L138'></a><a href='#L138'>138</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L138'></a><a href='#L138'>138</a>
+<a name='L139'></a><a href='#L139'>139</a>
+<a name='L140'></a><a href='#L140'>140</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">8x</span>
-<span class="cline-any cline-yes">8x</span>
-<span class="cline-any cline-yes">8x</span>
-<span class="cline-any cline-yes">8x</span>
-<span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -258,9 +262,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -338,16 +342,18 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../utils/api';
 &nbsp;
-export default function ExportModal({ isOpen, onClose }) {
-  const [format, setFormat] = useState('json');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+export default function <span class="fstat-no" title="function not covered" >ExportModal(</span>{ isOpen, onClose }) {
+  const { t } = <span class="cstat-no" title="statement not covered" >useTranslation();</span>
+  const [format, setFormat] = <span class="cstat-no" title="statement not covered" >useState('json');</span>
+  const [startDate, setStartDate] = <span class="cstat-no" title="statement not covered" >useState('');</span>
+  const [endDate, setEndDate] = <span class="cstat-no" title="statement not covered" >useState('');</span>
+  const [isLoading, setIsLoading] = <span class="cstat-no" title="statement not covered" >useState(false);</span>
+  const [error, setError] = <span class="cstat-no" title="statement not covered" >useState('');</span>
 &nbsp;
-  const handleExport = <span class="fstat-no" title="function not covered" >as</span>ync (e) =&gt; {
+  const handleExport = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >as</span>ync (e) =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >    e.preventDefault();</span>
 <span class="cstat-no" title="statement not covered" >    setIsLoading(true);</span>
 <span class="cstat-no" title="statement not covered" >    setError('');</span>
@@ -368,7 +374,7 @@ export default function ExportModal({ isOpen, onClose }) {
       });
 &nbsp;
 <span class="cstat-no" title="statement not covered" >      if (!response.ok) {</span>
-<span class="cstat-no" title="statement not covered" >        throw new Error('Export failed');</span>
+<span class="cstat-no" title="statement not covered" >        throw new Error(t('export.error'));</span>
       }
 &nbsp;
       // Get the file content
@@ -389,24 +395,24 @@ export default function ExportModal({ isOpen, onClose }) {
 &nbsp;
 <span class="cstat-no" title="statement not covered" >      onClose();</span>
     } catch (err) {
-<span class="cstat-no" title="statement not covered" >      setError(err.message || 'Export failed. Please try again.');</span>
+<span class="cstat-no" title="statement not covered" >      setError(err.message || t('export.error'));</span>
     } finally {
 <span class="cstat-no" title="statement not covered" >      setIsLoading(false);</span>
     }
   };
 &nbsp;
-  if (!isOpen) return null;
+<span class="cstat-no" title="statement not covered" >  if (!isOpen) <span class="cstat-no" title="statement not covered" >return null;</span></span>
 &nbsp;
-  return (
+<span class="cstat-no" title="statement not covered" >  return (</span>
     &lt;div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"&gt;
       &lt;div className="bg-slate-900 rounded-lg shadow-xl p-6 max-w-md w-full mx-4 dark:bg-slate-800"&gt;
-        &lt;h2 className="text-2xl font-bold mb-4 text-slate-100"&gt;Export Journal&lt;/h2&gt;
+        &lt;h2 className="text-2xl font-bold mb-4 text-slate-100"&gt;{t('export.title')}&lt;/h2&gt;
 &nbsp;
         &lt;form onSubmit={handleExport} className="space-y-4"&gt;
           {/* Format Selection */}
           &lt;div&gt;
             &lt;label className="block text-sm font-medium text-slate-300 mb-2"&gt;
-              Export Format
+              {t('export.format')}
             &lt;/label&gt;
             &lt;select
               value={format}
@@ -447,7 +453,7 @@ export default function ExportModal({ isOpen, onClose }) {
 &nbsp;
           {/* Error Message */}
           {error &amp;&amp; (
-<span class="branch-1 cbranch-no" title="branch not covered" >            &lt;div className="p-3 bg-red-900 text-red-100 rounded-lg text-sm"&gt;</span>
+            &lt;div className="p-3 bg-red-900 text-red-100 rounded-lg text-sm"&gt;
               {error}
             &lt;/div&gt;
           )}
@@ -466,7 +472,7 @@ export default function ExportModal({ isOpen, onClose }) {
               disabled={isLoading}
               className="flex-1 px-4 py-2 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700 disabled:bg-red-400 transition-colors"
             &gt;
-              {isLoading ? <span class="branch-0 cbranch-no" title="branch not covered" >'Exporting...' </span>: 'Export'}
+              {isLoading ? 'Exporting...' : 'Export'}
             &lt;/button&gt;
           &lt;/div&gt;
         &lt;/form&gt;
@@ -481,7 +487,7 @@ export default function ExportModal({ isOpen, onClose }) {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-03-31T18:36:31.260Z
+                at 2026-04-01T16:03:03.586Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">68.75% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>11/16</span>
+                <span class='fraction'>0/16</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">50% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>5/10</span>
+                <span class='fraction'>0/10</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">57.14% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>4/7</span>
+                <span class='fraction'>0/7</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">73.33% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>11/15</span>
+                <span class='fraction'>0/15</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line medium'></div>
+    <div class='status-line low'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -122,7 +122,10 @@
 <a name='L57'></a><a href='#L57'>57</a>
 <a name='L58'></a><a href='#L58'>58</a>
 <a name='L59'></a><a href='#L59'>59</a>
-<a name='L60'></a><a href='#L60'>60</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L60'></a><a href='#L60'>60</a>
+<a name='L61'></a><a href='#L61'>61</a>
+<a name='L62'></a><a href='#L62'>62</a>
+<a name='L63'></a><a href='#L63'>63</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -134,35 +137,38 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">7x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">7x</span>
-<span class="cline-any cline-yes">7x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">7x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">7x</span>
-<span class="cline-any cline-yes">7x</span>
-<span class="cline-any cline-yes">7x</span>
-<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -183,47 +189,49 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import OfflineIndicator from './components/OfflineIndicator';
 import Feed from './pages/Feed';
 import PostDetail from './pages/PostDetail';
 import Trends from './pages/Trends';
+import DecisionPaths from './pages/DecisionPaths';
 import { initOfflineSupport } from './utils/pwa';
 import './App.css';
 &nbsp;
-export default function App() {
-  const [theme, setTheme] = useState(() =&gt; {
+export default function <span class="fstat-no" title="function not covered" >App(</span>) {
+  const [theme, setTheme] = <span class="cstat-no" title="statement not covered" >useState(<span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
     // Default to dark theme
-    const saved = localStorage.getItem('clawbook-theme');
-    return saved || 'dark';
+    const saved = <span class="cstat-no" title="statement not covered" >localStorage.getItem('clawbook-theme');</span>
+<span class="cstat-no" title="statement not covered" >    return saved || 'dark';</span>
   });
 &nbsp;
-  useEffect(() =&gt; {
+<span class="cstat-no" title="statement not covered" >  useEffect(<span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
     // Initialize PWA offline support (skip in test environment)
-    <span class="missing-if-branch" title="if path not taken" >I</span>if (process.env.NODE_ENV !== 'test') {
+<span class="cstat-no" title="statement not covered" >    if (process.env.NODE_ENV !== 'test') {</span>
 <span class="cstat-no" title="statement not covered" >      initOfflineSupport().catch(<span class="fstat-no" title="function not covered" >er</span>ror =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >        console.error('Failed to initialize offline support:', error);</span>
       });
     }
   }, []);
 &nbsp;
-  useEffect(() =&gt; {
-    localStorage.setItem('clawbook-theme', theme);
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else <span class="missing-if-branch" title="else path not taken" >E</span>{
+<span class="cstat-no" title="statement not covered" >  useEffect(<span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    localStorage.setItem('clawbook-theme', theme);</span>
+<span class="cstat-no" title="statement not covered" >    if (theme === 'dark') {</span>
+<span class="cstat-no" title="statement not covered" >      document.documentElement.classList.add('dark');</span>
+    } else {
 <span class="cstat-no" title="statement not covered" >      document.documentElement.classList.remove('dark');</span>
     }
   }, [theme]);
 &nbsp;
-  const toggleTheme = <span class="fstat-no" title="function not covered" >()</span> =&gt; {
+  const toggleTheme = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >    setTheme(<span class="fstat-no" title="function not covered" >pr</span>ev =&gt; <span class="cstat-no" title="statement not covered" >prev === 'dark' ? 'light' : 'dark')</span>;</span>
   };
 &nbsp;
-  return (
+<span class="cstat-no" title="statement not covered" >  return (</span>
     &lt;BrowserRouter&gt;
-      &lt;div className={`${theme === 'dark' ? 'dark bg-slate-950 text-slate-100' : <span class="branch-1 cbranch-no" title="branch not covered" >'bg-white text-slate-900'}</span> min-h-screen transition-colors duration-300`}&gt;
+      &lt;div className={`${theme === 'dark' ? 'dark bg-slate-950 text-slate-100' : 'bg-white text-slate-900'} min-h-screen transition-colors duration-300`}&gt;
         &lt;Header theme={theme} onThemeToggle={toggleTheme} /&gt;
         &lt;OfflineIndicator /&gt;
 &nbsp;
@@ -234,6 +242,7 @@ export default function App() {
             &lt;Route path="/" element={&lt;Feed /&gt;} /&gt;
             &lt;Route path="/post/:postId" element={&lt;PostDetail /&gt;} /&gt;
             &lt;Route path="/trends" element={&lt;Trends /&gt;} /&gt;
+            &lt;Route path="/decision-paths" element={&lt;DecisionPaths /&gt;} /&gt;
           &lt;/Routes&gt;
         &lt;/div&gt;
       &lt;/div&gt;
@@ -247,7 +256,7 @@ export default function App() {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-03-31T18:36:31.260Z
+                at 2026-04-01T16:03:03.586Z
             </div>
         <script src="../prettify.js"></script>
         <script>

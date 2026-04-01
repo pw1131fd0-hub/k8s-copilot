@@ -3,7 +3,7 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for src/components/Header.js</title>
+    <title>Code coverage report for src/components/ReasoningTimeline.js</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="../../prettify.css" />
     <link rel="stylesheet" href="../../base.css" />
@@ -19,34 +19,34 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../../index.html">All files</a> / <a href="index.html">src/components</a> Header.js</h1>
+        <h1><a href="../../index.html">All files</a> / <a href="index.html">src/components</a> ReasoningTimeline.js</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/2</span>
+                <span class='fraction'>0/6</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/2</span>
+                <span class='fraction'>0/12</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/1</span>
+                <span class='fraction'>0/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/2</span>
+                <span class='fraction'>0/6</span>
             </div>
         
             
@@ -109,7 +109,26 @@
 <a name='L44'></a><a href='#L44'>44</a>
 <a name='L45'></a><a href='#L45'>45</a>
 <a name='L46'></a><a href='#L46'>46</a>
-<a name='L47'></a><a href='#L47'>47</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L47'></a><a href='#L47'>47</a>
+<a name='L48'></a><a href='#L48'>48</a>
+<a name='L49'></a><a href='#L49'>49</a>
+<a name='L50'></a><a href='#L50'>50</a>
+<a name='L51'></a><a href='#L51'>51</a>
+<a name='L52'></a><a href='#L52'>52</a>
+<a name='L53'></a><a href='#L53'>53</a>
+<a name='L54'></a><a href='#L54'>54</a>
+<a name='L55'></a><a href='#L55'>55</a>
+<a name='L56'></a><a href='#L56'>56</a>
+<a name='L57'></a><a href='#L57'>57</a>
+<a name='L58'></a><a href='#L58'>58</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -146,6 +165,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -156,51 +178,62 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import React from 'react';
-import { useTranslation } from 'react-i18next';
-import LanguageSwitcher from './LanguageSwitcher';
+import PropTypes from 'prop-types';
 &nbsp;
-export default function <span class="fstat-no" title="function not covered" >Header(</span>{ theme, onThemeToggle }) {
-  const { t } = <span class="cstat-no" title="statement not covered" >useTranslation();</span>
+export default function <span class="fstat-no" title="function not covered" >ReasoningTimeline(</span>{ steps = <span class="branch-0 cbranch-no" title="branch not covered" >[] </span>}) {
+<span class="cstat-no" title="statement not covered" >  if (!steps || steps.length === 0) {</span>
+<span class="cstat-no" title="statement not covered" >    return null;</span>
+  }
+&nbsp;
 <span class="cstat-no" title="statement not covered" >  return (</span>
-    &lt;header className="sticky top-0 z-50 bg-slate-900 dark:bg-slate-900 border-b border-slate-800 dark:border-slate-700 backdrop-blur supports-[backdrop-filter]:bg-slate-900/75"&gt;
-      &lt;div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between"&gt;
-        {/* Logo */}
-        &lt;div className="flex items-center gap-3"&gt;
-          &lt;span className="text-3xl select-none"&gt;🦞&lt;/span&gt;
-          &lt;div&gt;
-            &lt;h1 className="text-xl font-bold text-slate-100 dark:text-slate-100 leading-tight"&gt;
-              {t('common.appName')}
-            &lt;/h1&gt;
-            &lt;p className="text-xs text-slate-400 dark:text-slate-500 leading-none"&gt;
-              {t('home.subtitle')}
-            &lt;/p&gt;
-          &lt;/div&gt;
-        &lt;/div&gt;
+    &lt;div&gt;
+      &lt;p className="text-sm text-slate-400 font-semibold mb-4"&gt;REASONING STEPS&lt;/p&gt;
+      &lt;div className="relative"&gt;
+        {steps.map(<span class="fstat-no" title="function not covered" >(s</span>tep, index) =&gt; {
+          const stepKey = <span class="cstat-no" title="statement not covered" >step.id || step.step_number || index;</span>
+<span class="cstat-no" title="statement not covered" >          return (</span>
+            &lt;div key={stepKey} className="mb-6 last:mb-0"&gt;
+              &lt;div className="flex gap-4"&gt;
+                {/* Timeline indicator */}
+                &lt;div className="flex flex-col items-center"&gt;
+                  &lt;div className="w-8 h-8 rounded-full bg-blue-600 border-2 border-slate-700 flex items-center justify-center"&gt;
+                    &lt;span className="text-white text-xs font-bold"&gt;{index + 1}&lt;/span&gt;
+                  &lt;/div&gt;
+                  {index &lt; steps.length - 1 &amp;&amp; (
+                    &lt;div className="w-0.5 h-12 bg-slate-700 mt-2"&gt;&lt;/div&gt;
+                  )}
+                &lt;/div&gt;
 &nbsp;
-        {/* Controls: Language Switcher + Theme Toggle */}
-        &lt;div className="flex items-center gap-3"&gt;
-          &lt;LanguageSwitcher /&gt;
-          &lt;button
-          onClick={onThemeToggle}
-          className="p-2 rounded-lg bg-slate-800 dark:bg-slate-800 hover:bg-slate-700 dark:hover:bg-slate-700 transition-colors text-slate-300 dark:text-slate-400"
-          title="Toggle theme"
-          aria-label="Toggle theme"
-        &gt;
-          {theme === 'dark' ? (
-            &lt;svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"&gt;
-              &lt;path fillRule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.707.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.464 5.05l-.707-.707a1 1 0 00-1.414 1.414l.707.707zm5.657-9.193a1 1 0 00-1.414 0l-.707.707A1 1 0 005.05 6.464l.707-.707a1 1 0 001.414-1.414zM5 8a1 1 0 100-2H4a1 1 0 000 2h1z" clipRule="evenodd" /&gt;
-            &lt;/svg&gt;
-          ) : (
-            &lt;svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"&gt;
-              &lt;path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" /&gt;
-            &lt;/svg&gt;
-          )}
-          &lt;/button&gt;
-        &lt;/div&gt;
+                {/* Content */}
+                &lt;div className="flex-1 pb-2"&gt;
+                  &lt;p className="text-sm font-semibold text-slate-200 mb-1"&gt;
+                    {step.step_number}. {step.description}
+                  &lt;/p&gt;
+                  {step.reasoning &amp;&amp; (
+                    &lt;p className="text-sm text-slate-400 leading-relaxed"&gt;
+                      {step.reasoning}
+                    &lt;/p&gt;
+                  )}
+                &lt;/div&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;
+          );
+        })}
       &lt;/div&gt;
-    &lt;/header&gt;
+    &lt;/div&gt;
   );
 }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >ReasoningTimeline.propTypes = {</span>
+  steps: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      step_number: PropTypes.number,
+      description: PropTypes.string.isRequired,
+      reasoning: PropTypes.string,
+    })
+  ),
+};
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
